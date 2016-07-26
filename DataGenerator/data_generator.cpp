@@ -4,7 +4,8 @@
  * on implicit surface definitions of common 3D objects.
  */
 
-// Just a comment added on July 26 to test git.
+// Just a comment added on July 26 to test git (2).
+// more comments.
 
 // If compiling for Microsoft Visual C++, turn off the warnings
 // about insecure C library functions.
