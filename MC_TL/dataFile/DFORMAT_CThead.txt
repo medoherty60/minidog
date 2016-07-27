@@ -1,0 +1,34 @@
+# MARCHING CUBES ALGORITHM - THOMAS LEWINER
+#
+# Nov 27, 2014
+# Create Meristem Surfaces:
+# 
+# File: 
+# 1) Density Range (2 imgs): [120,100],[120,80]; Edge Strength: (6,1)
+
+numFiles 3
+#File MERISTEM80_2_213x170x168_XZ_[1.333,9]_Lvv.raw
+#File MERISTEM_170x170x200_M23_[1.333,9]_Lvv.raw
+File CThead2_128x256x256_[1.000,7]_Lvv.raw
+bytes 4
+isSwapBytes 0
+#GFile MERISTEM80_2_213x170x168_XZ_[1.333,9].raw
+#GFile MERISTEM_170x170x200_M23_[1.333,9].raw
+GFile CThead2_128x256x256_[1.000,7].raw
+Bytes 4
+IsSwapBytes 1
+#YFile MERISTEM80_2_213x170x168_XZ_[1.333,9]_[147,0]_[-200,-688]_[0,0]_cubes.raw
+#YFile MERISTEM_170x170x200_M23_[1.333,9]_[139,0]_[-200,-800]_[0,0]_cubes.raw
+YFile CThead2_128x256x256_[1.000,7]_[30,0]_[60,30]_[0,0]_cubes.raw
+Qbytes 1
+x_dimension 128	
+y_dimension 256
+z_dimension 256
+contourValue 0
+density_filter 0
+mark_cubes 1
+
+
+
+
+

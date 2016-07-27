@@ -1,0 +1,22 @@
+# MARCHING CUBES ALGORITHM - THOMAS LEWINER
+#
+# Mar 25, 2015
+# Create Surfaces from original Meristem image (2 bytes signed [-1845,845], swap bytes)
+# Create Surfaces from smoothed volume:
+# 
+
+numFiles 1
+File MERISTEM80_2_213x170x168_XZ.raw
+bytes 2
+isSwapBytes 1
+GFile
+Bytes 0
+IsSwapBytes 0
+YFile 
+Qbytes 0
+x_dimension 213
+y_dimension 170
+z_dimension 168
+contourValue -700
+density_filter 0
+mark_cubes 0
