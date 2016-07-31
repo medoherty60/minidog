@@ -1,7 +1,7 @@
 #include "FileManager.h"
-#include "RenderManager.h"
 #include "MarchingCubes.h"
 #include <GL/glut.h>
+#include "UI/RenderManager.h"
 
 /*
  Project Name: MC_Algorithm_TL

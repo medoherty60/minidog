@@ -3,10 +3,10 @@
 using namespace std;
 #include <GL/glut.h>
 
-#include "RenderManager.h"
-#include "Camera.h"
-#include "InputProcessor.h"
-#include "LightManager.h"
+#include "UI/RenderManager.h"
+#include "UI/Camera.h"
+#include "UI/InputProcessor.h"
+#include "UI/LightManager.h"
 #include "show_text.h"
 #include "global.h"
 

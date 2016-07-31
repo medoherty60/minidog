@@ -3,7 +3,8 @@
  *  Created by Marina Doherty on 6/19/12.
  */
 
-#include "LightManager.h"
+#include "UI/LightManager.h"
+
 #include <GL/glut.h>
 
 LightManager light_manager;

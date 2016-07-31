@@ -3,8 +3,9 @@
 // http://www.lighthouse3d.com/opengl/glut/index.php?bmpfont and
 // http://www.lighthouse3d.com/opengl/glut/index.php?bmpfontortho
 
+#include "UI/show_text.h"
+
 #include <GL/glut.h>
-#include "show_text.h"
 
 void renderBitmapString(float x, float y, float z, void *font, char *string) 
 {  
