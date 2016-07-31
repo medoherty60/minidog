@@ -315,8 +315,8 @@ static void displayLines(){
 
 void RenderManager::displayFaces(){
 	
-	float osx = CONF.cf_offsetX, osy = CONF.cf_offsetY, osz = CONF.cf_offsetZ;
-	float dx = CONF.cf_deltaX, dy = CONF.cf_deltaY, dz = CONF.cf_deltaZ;
+	float osx = HEADER.offsetX, osy = HEADER.offsetY, osz = HEADER.offsetZ;
+	//float dx = HEADER.cf_deltaX, dy = HEADER.cf_deltaY, dz = HEADER.cf_deltaZ;
 	Cube* curr_cube;
 	
 	int drawBadNormalCounter=0;
@@ -431,6 +431,128 @@ void RenderManager::displayFaces(){
 	}//end for
 	 // drawCube(dx,dy,dz, osx, osy, osz);
 }
+
+
+/* Marina's  version
+
+void RenderManager::displayFaces(){
+
+	float osx = HEADER.offsetX, osy = HEADER.offsetY, osz = HEADER.offsetZ;
+
+	drawBadNormalCounter=0;
+	for (unsigned int j=0; j<global_facesVector.size(); j++) {
+
+		Face f = global_facesVector[j];
+		Point p1 = f.point1(), p2 = f.point2(), p3 = f.point3();
+		Vector n1 = f.normal1(), n2=f.normal2(), n3 = f.normal3();
+		Color color = f.getColor();
+
+		isBadNormal=0;
+		if (f.isDrawFace()) {
+			isBadNormal=1;
+			drawBadNormalCounter++;
+			cout<<"isDrawFace="<<f.isDrawFace()<<endl;
+				//	glColor4f(0.9,0.9,0.,1.);
+				//}else{
+				//glColor4f(1.,0.,0.,1.);
+		}
+			//curr_cube = f.getCube();
+			//if(find_j && curr_cube->ci == 3998885)
+			//{ cout<<"cube_id="<<curr_cube->ci<<", j="<<j<<endl; find_j=0; }
+
+		if(isBadNormal && displayIndex && drawBadNormalCounter<=displayAmt){
+			curr_cube = f.getCube();
+			cout<<"---"<<endl;
+			cout<<"j="<<j<<", drawBadNormalCounter="<<drawBadNormalCounter<<endl;
+			cout<<"Number face in a cube = "<<f.getNumFaces()<<", faceID="<<f.getFaceID();
+			cout<<", cornerFlag="<<curr_cube->cornerFlag<<endl;
+			cout<<"ActiveCorners="<<curr_cube->activeCorners<<", corner Positions=[";
+			for(int i=0; i<curr_cube->cornerPos.size(); i++){
+				cout<<curr_cube->cornerPos[i];
+				if(i!=curr_cube->cornerPos.size()-1) cout<<",";
+			}
+			cout<<"]"<<endl;
+			cout<<"Corner0 position=["<<curr_cube->pt.x()<<","<<curr_cube->pt.y()<<","<<curr_cube->pt.z()<<"]"<<endl;
+			cout<<"point=["<<p1.x()+osx<<","<<p1.y()+osy<<","<<p1.z()+osz<<"]"<<endl;
+			cout<<"point=["<<p2.x()+osx<<","<<p2.y()+osy<<","<<p2.z()+osz<<"]"<<endl;
+			cout<<"point=["<<p3.x()+osx<<","<<p3.y()+osy<<","<<p3.z()+osz<<"]"<<endl;
+			if (drawBadNormalCounter==displayAmt) displayIndex=0;
+		}
+		int target_j = 161827;
+		int mode = 0;    //0=anti-clockwise; 1=clockwise; 3=translate the face to (0,0,0)
+		if((drawOneFace && (j==target_j)) || ((!drawOneFace)&&(mode==0))){
+
+			if(isDrawFaceNormal){
+				glDisable(GL_LIGHTING);
+				if(mode==3){ //translate a face to (0,0,0)
+					translation = p1;
+					p1_prime = Point(p1-translation);
+					p2_prime = Point(p2-translation);
+					p3_prime = Point(p3-translation);
+					p1_prime = p1_prime*50;
+					p2_prime = p2_prime*50;
+					p3_prime = p3_prime*50;
+					displayNormal(p1_prime,p2_prime,p3_prime,
+								  n1,n2,n3,
+								  osx,osy,osz,
+								  mode);
+
+				}else if(mode==0 && j==target_j)
+					displayNormal(p1,p2,p3,n1,n2,n3,osx,osy,osz,mode);
+				glEnable(GL_LIGHTING);
+			}
+			setMaterial_using_glColor();
+			glBegin(GL_TRIANGLES);
+			switch (mode) {
+				case 0:
+						//glColor4f(0.5,0.0,0.0,1.);
+						//	glColor4f(0.0,0.5,0.,1.);
+					glColor4f(color.red(), color.green(), color.blue(), 1.0);
+					glNormal3f(n1.x(), n1.y(), n1.z());
+					glVertex3f(p1.x()+osx, p1.y()+osy, p1.z()+osz);
+
+					glNormal3f(n2.x(), n2.y(), n2.z());
+					glVertex3f(p2.x()+osx, p2.y()+osy, p2.z()+osz);
+
+					glNormal3f(n3.x(), n3.y(), n3.z());
+					glVertex3f(p3.x()+osx, p3.y()+osy, p3.z()+osz);
+
+					break;
+				case 1:
+					glVertex3f(p3.x()+osx, p3.y()+osy, p3.z()+osz);
+					glNormal3f(n3.x(), n3.y(), n3.z());
+					glVertex3f(p2.x()+osx, p2.y()+osy, p2.z()+osz);
+					glNormal3f(n2.x(), n2.y(), n2.z());
+					glVertex3f(p1.x()+osx, p1.y()+osy, p1.z()+osz);
+					glNormal3f(n1.x(), n1.y(), n1.z());
+					break;
+				case 3: //centering the face
+						//glColor4f(1., 0, 1., 0.);
+						glNormal3f(n1.x(), n1.y(), n1.z());
+						glVertex3f(p1_prime.x(), p1_prime.y(), p1_prime.z());
+						glNormal3f(n2.x(), n2.y(), n2.z());
+						glVertex3f(p2_prime.x(), p2_prime.y(), p2_prime.z());
+						glNormal3f(n3.x(), n3.y(), n3.z());
+						glVertex3f(p3_prime.x(), p3_prime.y(), p3_prime.z());
+						break;
+				default:
+					break;
+			}
+			glEnd();
+
+				//glDisable(GL_LIGHTING);
+				//displayNormal(p1,p2,p3,n1,n2,n3,osx,osy,osz,mode);
+				//glEnable(GL_LIGHTING);
+
+			}
+		 //outfile<<" rendering vertex1: ["<<p1.x()+offsetx<<","<<p1.y()+offsety<<","<<p1.z()+offsetz<<"]"<<endl;
+		 //outfile<<" rendering vertex2: ["<<p2.x()+offsetx<<","<<p2.y()+offsety<<","<<p2.z()+offsetz<<"]"<<endl;
+		 //outfile<<" rendering vertex3: ["<<p3.x()+offsetx<<","<<p3.y()+offsety<<","<<p3.z()+offsetz<<"]"<<endl;
+		 //outfile<<" ------------------ "<<endl;
+	}//end for
+	 // drawCube(dx,dy,dz, osx, osy, osz);
+}
+*/
 
 void RenderManager::idle(void){
 	glutSetWindow(controlPanel_window);
@@ -581,7 +703,7 @@ void RenderManager::initCPW(){
 	glutPassiveMotionFunc(passive_motionCPW);
 
 	GLUI_Panel* panel1 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
-	GLUI_EditText* isovalue_text = new GLUI_EditText(panel1, "isovalue:", &(CONF.cf_isoVal));
+	GLUI_EditText* isovalue_text = new GLUI_EditText(panel1, "isovalue:", &(HEADER.isoVal));
 	isovalue_text->disable();
 	// This is slightly dangerous. The addresses given to GLUI_EditText should
 	// not be local variables, since edits from UI would be placed here.

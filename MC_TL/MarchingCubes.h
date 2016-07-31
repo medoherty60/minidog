@@ -18,7 +18,7 @@
 #endif // WIN32
 
 #include "Matrix3D.h"
-#include "Configurations.h"
+#include "mc-io/mc1_io.h"
 #include "Point.h"
 //_____________________________________________________________________________
 // types
@@ -197,7 +197,7 @@ public :
    * \param iso isovalue
    */
   //void run( real iso = (real)0.0 ) ;
-  void run( Configurations& conf, real iso = 0.0, Matrix3D<float>* originalDensityVolObj = NULL, Matrix3D<float>* binaryVolObj = NULL) ;
+  void run( MarchingCube_header& mcHeader, real iso = 0.0, Matrix3D<float>* shadingObj = NULL, Matrix3D<float>* cubeMarkObj = NULL) ;
 	
 protected :
   /** tesselates one cube */
@@ -225,8 +225,8 @@ protected :
    */
   void add_triangle ( const char* trig, char n, int v12 = -1 ) ;
   
-  /** routine to buld a face list from other classes  MSD:20130101 */
-  void build_ext_triangles(Configurations& conf, Matrix3D<float>* originalDensityVolObj = NULL);
+  /** routine to build a face list from other classes  MSD:20130101 */
+  void build_ext_triangles(MarchingCube_header& mcHeader, Matrix3D<float>* originalDensityVolObj = NULL);
   /** routine to extract density values from six neighbor voxels MSD:20130106 */	
   void getSixNeighborVoxels(float nv[], Matrix3D<float>* dataPointObj, Point& ci);
   /** routine to extract density values from six neighbor voxels MSD:20130106 */

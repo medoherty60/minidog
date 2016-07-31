@@ -72,7 +72,7 @@ MarchingCubes::~MarchingCubes()
 
 //_____________________________________________________________________________
 // main algorithm
-void MarchingCubes::run( Configurations& conf, real iso , Matrix3D<float>* originalDensityVolObj, Matrix3D<float>* cubeMarksObj)
+void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<float>* shadingObj, Matrix3D<float>* cubeMarksObj)
 //-----------------------------------------------------------------------------
 {
   clock_t time = clock() ;
@@ -95,10 +95,10 @@ void MarchingCubes::run( Configurations& conf, real iso , Matrix3D<float>* origi
 	// -- New Code: MSD 20130107
 	// -- density filter on 2nd derivatives
 	// --
-	  if(CONF.cf_densityFilter){
+	  if(mcHeader.densityFilter){
 		  validCube = false;
 		  Point p(_i, _j, _k);
-		  getEightDensityPoints(dpts, *originalDensityVolObj, p);
+		  getEightDensityPoints(dpts, *shadingObj, p);
 		  
 		  for(int j=0; j<8; j++){
 			  if(dpts[j]>-300. && dpts[j]<700.){
@@ -110,7 +110,7 @@ void MarchingCubes::run( Configurations& conf, real iso , Matrix3D<float>* origi
 	  }
 	//----------------------------------
 	//check cube markers (MSD: 20130716)
-	  if(CONF.cf_markCube){
+	  if(mcHeader.markCube){
 		  if(cubeMarksObj->get(_i,_j,_k)){
 			    edgeMarkCube = true; 
 			    countCubes_withEdgeMarkers++;
@@ -146,12 +146,11 @@ void MarchingCubes::run( Configurations& conf, real iso , Matrix3D<float>* origi
   printf("Num of Cubes in Density Range: %d \n", countCubes_inDensityRange);
 		 
   //-- New function to build triangle faces & gradients on original density (MSD: 20130101)
-  build_ext_triangles(conf, originalDensityVolObj);
 	
   cout<<"num of FACES="<<getNumFaces()<<endl;
   cout<<"% of FACES="<<((float)getNumFaces()/(float)(_size_x*_size_y*_size_z))*100.0<<endl;
-		// for(int i=0; i<getNumFaces(); i++)
-		//cout<<"FACE="<<getOneFace(i)<<endl;
+  // for(int i=0; i<getNumFaces(); i++)
+  //cout<<"FACE="<<getOneFace(i)<<endl;
   //--------------------------------------------------------
 }
 //_____________________________________________________________________________
@@ -888,7 +887,7 @@ void MarchingCubes::getSixNeighborVoxels(float nv[], Matrix3D<float>* dataPointO
 }
 //_____________________________________________________________________________
 // Build external triangles MSD:20130101
-void MarchingCubes::build_ext_triangles(Configurations& conf, Matrix3D<float>* origVolObj){
+void MarchingCubes::build_ext_triangles(MarchingCube_header& mcHeader, Matrix3D<float>* origVolObj){
 
 	Face f; 
 	vector<Point> ptv;								//triangle positions
@@ -908,9 +907,9 @@ void MarchingCubes::build_ext_triangles(Configurations& conf, Matrix3D<float>* o
 		v3_idx = _triangles[i].v3 ;
 
 		//triangle faces
-		ptv[0]=Point(_vertices[v1_idx].x*conf.cf_deltaX, _vertices[v1_idx].y*conf.cf_deltaY, _vertices[v1_idx].z*conf.cf_deltaZ);
-		ptv[2]=Point(_vertices[v2_idx].x*conf.cf_deltaX, _vertices[v2_idx].y*conf.cf_deltaY, _vertices[v2_idx].z*conf.cf_deltaZ);
-		ptv[1]=Point(_vertices[v3_idx].x*conf.cf_deltaX, _vertices[v3_idx].y*conf.cf_deltaY, _vertices[v3_idx].z*conf.cf_deltaZ);
+		ptv[0]=Point(_vertices[v1_idx].x*mcHeader.dX, _vertices[v1_idx].y*mcHeader.dY, _vertices[v1_idx].z*mcHeader.dZ);
+		ptv[2]=Point(_vertices[v2_idx].x*mcHeader.dX, _vertices[v2_idx].y*mcHeader.dY, _vertices[v2_idx].z*mcHeader.dZ);
+		ptv[1]=Point(_vertices[v3_idx].x*mcHeader.dX, _vertices[v3_idx].y*mcHeader.dY, _vertices[v3_idx].z*mcHeader.dZ);
 		
         //normals
 		if(origVolObj==NULL){
@@ -935,9 +934,9 @@ void MarchingCubes::build_ext_triangles(Configurations& conf, Matrix3D<float>* o
 			for (int j=0; j<3; j++) {
 				
 				getSixNeighborVoxels(nv, origVolObj, p[j]);  
-				nlv[j] = Vector((nv[1] - nv[0])/CONF.cf_two_deltaX,	   //right-left
-							    (nv[3] - nv[2])/CONF.cf_two_deltaY,	   //up-down
-								(nv[5] - nv[4])/CONF.cf_two_deltaZ);   //front-back
+				nlv[j] = Vector((nv[1] - nv[0])/mcHeader.two_dX,	   //right-left
+							    (nv[3] - nv[2])/mcHeader.two_dY,	   //up-down
+								(nv[5] - nv[4])/mcHeader.two_dZ);   //front-back
 				nlv[j].normalize();
 				nlv[j]= nlv[j]*-1;
 				/*

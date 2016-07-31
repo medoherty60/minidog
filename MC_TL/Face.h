@@ -25,6 +25,7 @@ public:
 		numberFaces=0;
 		faceID=0;
 		isReversed=0;
+		shadowCube = NULL;
 	}
 	//new function
 	void addOneFace(vector<Point>& _triPoints, vector<Vector>& _normalVectors){
