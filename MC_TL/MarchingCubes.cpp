@@ -143,7 +143,9 @@ void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<floa
   }
 
   printf("Marching Cubes ran in %lf secs.\n", (double)(clock() - time)/CLOCKS_PER_SEC) ;
-  printf("Num of Cubes in Density Range: %d \n", countCubes_inDensityRange);
+  if(mcHeader.densityFilter){
+	  printf("Num of Cubes in Density Range: %d \n", countCubes_inDensityRange);
+  }
 		 
   //-- New function to build triangle faces & gradients on original density (MSD: 20130101)
 	

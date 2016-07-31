@@ -1,0 +1,1 @@
+-ref data/MERISTEM80_2_213x170x168_XZ_8_[1.333,9]_Lvv.raw -shad data/MERISTEM80_2_213x170x168_XZ_8_[1.333,9].raw -cmk data/MERISTEM80_2_213x170x168_XZ_8_[1.333,9]_[12,5]_[0,0]_[0,0]_cubes_12edges.raw -dimX 213 -dimY 170 -dimZ 168
