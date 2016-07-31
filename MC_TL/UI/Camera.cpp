@@ -10,8 +10,8 @@
 using namespace std;
 #include <GL/glut.h>
 
-#include "UI/Camera.h"
-#include "MyMath.h"
+#include "Camera.h"
+#include "../MyMath.h"
 
 Camera::Camera(int _window) :
 		camera_window(_window),

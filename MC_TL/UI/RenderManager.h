@@ -1,7 +1,7 @@
 #ifndef RENDERMANAGER_H
 #define RENDERMANAGER_H
 
-//#define USE_GLUI
+#define USE_GLUI
 
 // FIXIT!! this should be moved to .cpp if possible
 #ifdef USE_GLUI
@@ -78,5 +78,8 @@ private:
 	// functions for rendering in the object window.
 	static void setProjection(int window, int x, int y, int w, int h);
 	static void displayFaces();
+
+	static void renderBitmapString(float x, float y, float z, void *font, char *string);
+	static void renderString(float x, float y, char* string);
 };
 #endif

@@ -3,12 +3,11 @@
 using namespace std;
 #include <GL/glut.h>
 
-#include "UI/RenderManager.h"
-#include "UI/Camera.h"
-#include "UI/InputProcessor.h"
-#include "UI/LightManager.h"
-#include "show_text.h"
-#include "global.h"
+#include "RenderManager.h"
+#include "Camera.h"
+#include "InputProcessor.h"
+#include "LightManager.h"
+#include "../global.h"
 
 int RenderManager::main_window=0, RenderManager::object_window=0;
 int RenderManager::controlPanel_window=0, RenderManager::text_window=0;
@@ -750,4 +749,20 @@ void RenderManager::initialize(int* pargc, char** argv) {
 	initOW();	// object window
 	initCPW();	// control panel window
 	initTW();	// text window
+}
+
+void RenderManager::renderBitmapString(float x, float y, float z, void *font, char *string)
+{
+  char *c;
+  glColor3f(0.0, 0.0, 0.);
+  glRasterPos3f(x,y,z);
+  for (c=string; *c != '\0'; c++) glutBitmapCharacter(font, *c);
+}
+
+void RenderManager::renderString(float x, float y, char* string)
+{
+	glPushMatrix();		//save orientation of coordinate systems
+	glLoadIdentity();
+	renderBitmapString(x ,y, 0, GLUT_BITMAP_HELVETICA_18, string);
+	glPopMatrix();		//restore orientation of coordinate systems
 }

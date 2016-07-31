@@ -4,10 +4,9 @@
  *  Created on: Jul 30, 2016
  *      Author: Marina Doherty
  */
-#include "UI/InputProcessor.h"
-
 #include <GL/glut.h>
-#include "UI/Camera.h"
+#include "InputProcessor.h"
+#include "Camera.h"
 
 InputProcessor::InputProcessor(Camera* _camera) :
 	camera(_camera),
