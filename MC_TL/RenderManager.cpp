@@ -1,19 +1,40 @@
+#include <cstdio>
+#include <cstring>
+using namespace std;
+#include <GL/glut.h>
+
 #include "RenderManager.h"
+#include "Camera.h"
+#include "InputProcessor.h"
+#include "LightManager.h"
+#include "show_text.h"
+#include "global.h"
 
-int main_window=0, object_window=0, controlPanel_window=0, text_window=0;
-int BothFaces=1;
-int drawBadNormalCounter = 0, drawOneFace=0, outputOnce=0, isDrawFaceNormal=0, isBadNormal=0;
-int displayAmt=5, displayIndex=0;
-Cube* curr_cube;
+int RenderManager::main_window=0, RenderManager::object_window=0;
+int RenderManager::controlPanel_window=0, RenderManager::text_window=0;
+Camera* RenderManager::camera = NULL;
+InputProcessor* RenderManager::input_processor = NULL;
 
-Point translation, p1_prime, p2_prime, p3_prime;
+#ifdef USE_GLUI
+static GLUI_EditText* mousex_text = NULL;
+static GLUI_EditText* mousey_text = NULL;
+static GLUI_Button* camera_restore_buttons[10] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+GLUI *RenderManager::gluiCPW = NULL;
+GLUI *RenderManager::gluiTW = NULL;
+#endif
 
-int find_j=1;
+bool RenderManager::bothFaces = true;
+bool RenderManager::drawOneFace = false;
+bool RenderManager::outputOnce = false;
+bool RenderManager::isDrawFaceNormal = false;
+int RenderManager::displayAmt = 5;
+int RenderManager::displayIndex = 0;
 
-void copyColor(float c1[4], float c2[4]){
+static void copyColor(float c1[4], float c2[4]){
 	memcpy(c1, c2, 4*sizeof(float));
 }
-void setMaterial_Cube(){
+
+static void setMaterial_Cube(){
 	
 	GLfloat mat_specular[4],  mat_diffuse[4];
 	GLfloat mat_diffuse_bk[4], mat_ambient_bk[4], mat_specular_bk[4];
@@ -44,7 +65,8 @@ void setMaterial_Cube(){
 	glColorMaterial (GL_FRONT, GL_AMBIENT);
 		//glEnable (GL_COLOR_MATERIAL);
 }
-void setMaterial_using_glColor(){
+
+static void setMaterial_using_glColor(){
 	
 	GLfloat mat_specular[4],  mat_diffuse[4];
 	GLfloat mat_diffuse_bk[4], mat_ambient_bk[4], mat_specular_bk[4];
@@ -75,7 +97,8 @@ void setMaterial_using_glColor(){
 	glColorMaterial (GL_FRONT, GL_AMBIENT);
 	glEnable (GL_COLOR_MATERIAL);
 }
-void setMaterial(){
+
+static void setMaterial(){
 	
 	int SpecularOn = 1;
 	
@@ -117,8 +140,9 @@ void setMaterial(){
 	
 	//glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	//glEnable (GL_COLOR_MATERIAL);
-}/*
-void setMaterial(){
+}
+
+static void setMaterialUNUSED(){
 	
 	int SpecularOn = 1;
 	
@@ -158,7 +182,7 @@ void setMaterial(){
 	
 		//glColorMaterial (GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 		//glEnable (GL_COLOR_MATERIAL);
-}*/
+}
 
 void displayNormal(Point p1,Point p2, Point p3,
 				   Vector& n1,Vector& n2,Vector& n3,
@@ -187,7 +211,7 @@ void displayNormal(Point p1,Point p2, Point p3,
 		glVertex3f(dn3.x()+osx,dn3.y()+osy,dn3.z()+osz);
 	glEnd();
 
-	if(outputOnce){
+	if(RenderManager::outputOnce){
 		cout<<"Display Normal: s="<<s<<endl;
 		cout<<"ofsetX="<<osx<<","<<"offsetY="<<osy<<","<<"offsetZ="<<osz<<endl;
 		cout<<"Point 1 (start point) =["<<p1.x()+osx<<", "<<p1.y()+osy<<", "<<p1.z()+osz<<"]"<<endl;
@@ -196,12 +220,12 @@ void displayNormal(Point p1,Point p2, Point p3,
 		cout<<"Point 2 (end point) =["<<(dn2.x()+osx)<<", "<<(dn1.y()+osy)<<", "<<(dn1.z()+osz)<<"]"<<endl;
 		cout<<"Point 3 (start point) =["<<p3.x()+osx<<", "<<p1.y()+osy<<", "<<p1.z()+osz<<"]"<<endl;
 		cout<<"Point 3 (end point) =["<<(dn3.x()+osx)<<", "<<(dn1.y()+osy)<<", "<<(dn1.z()+osz)<<"]"<<endl;
-		outputOnce=0;
+		RenderManager::outputOnce = false;
 	}
 	
 }
 
-void drawCube(float dx, float dy, float dz, float osx, float osy, float osz){
+static void drawCube(float dx, float dy, float dz, float osx, float osy, float osz){
 	
 		//cout<<"[osx,osy,osz]=["<<osx<<","<<osy<<","<<osz<<"]"<<endl;
 	osx = -0.5;
@@ -253,14 +277,50 @@ void drawCube(float dx, float dy, float dz, float osx, float osy, float osz){
 	glVertex3f(1.0f*dx+osx,  1.0f*dy+osy, -1.0f*dz+osz);
 	glVertex3f(1.0f*dx+osx,  1.0f*dy+osy,  0.0f*dz+osz);
 	glEnd();  // End of drawing color-cube
-	
 }
-void displayFaces(){
+
+static void renderWireFrame(float borderwidth, float r, float g, float b, float a){
+	glColor4f(r, g, b, a);
+	glutWireCube(borderwidth);
+}
+
+static void displayLines(){
+
+	float offset_Lx = -0.55, offset_Ly = -0.55, offset_Lz = 0.55;
+	glBegin(GL_LINES);
+		glColor3f(1., 0., 0.);
+		glVertex3f(0.+offset_Lx,0.+offset_Ly,0.+offset_Lz);				//x-axis
+		glVertex3f(0.3+offset_Lx,0.+offset_Ly,0.+offset_Lz);
+
+		glColor3f(0., 1., 0.);
+		glVertex3f(0.+offset_Lx,0.+offset_Ly,0.+offset_Lz);				//y-axis
+		glVertex3f(0.+offset_Lx,0.3+offset_Ly,0.+offset_Lz);
+
+		glColor3f(0., 0., 1.);
+		glVertex3f(0.+offset_Lx,0.+offset_Ly,0.+offset_Lz);				//z-axis
+		glVertex3f(0.+offset_Lx,0.+offset_Ly,-0.3+offset_Lz);
+	glEnd();
+
+	glBegin(GL_LINES);
+		glColor3f(1,0,0); glVertex3f(.5, 0.0, 0.0);  glVertex3f(1.0, 0.0, 0.0);
+		glColor3f(0,1,0); glVertex3f(0.0, 0.5, 0.0); glVertex3f(0.0, 1.0, 0.0);
+		glColor3f(0,0,1); glVertex3f(0.0, 0.0, 0.5); glVertex3f(0.0, 0.0, 1.0);
+	glEnd();
+
+	glBegin(GL_LINES);
+		glColor3f(1,0,0); glVertex3f(-0.5, 0.0, 0.0); glVertex3f(-1.0, 0.0, 0.0);
+		glColor3f(0,1,0); glVertex3f(0.0, -0.5, 0.0); glVertex3f(0.0, -1.0, 0.0);
+		glColor3f(0,0,1); glVertex3f(0.0, 0.0, -0.5); glVertex3f(0.0, 0.0, -1.0);
+	glEnd();
+}
+
+void RenderManager::displayFaces(){
 	
 	float osx = CONF.cf_offsetX, osy = CONF.cf_offsetY, osz = CONF.cf_offsetZ;
 	float dx = CONF.cf_deltaX, dy = CONF.cf_deltaY, dz = CONF.cf_deltaZ;
+	Cube* curr_cube;
 	
-	drawBadNormalCounter=0;
+	int drawBadNormalCounter=0;
 	for (int j=0; j<global_facesVector.size(); j++) {
 	//for (int j=0; j<100; j++) {
 		
@@ -269,7 +329,7 @@ void displayFaces(){
 		Vector n1 = f.normal1(), n2=f.normal2(), n3 = f.normal3();
 		Color color = f.getColor();
 		
-		isBadNormal=0;
+		int isBadNormal=0;
 		if (f.isDrawFace()) {
 			isBadNormal=1;
 			drawBadNormalCounter++;
@@ -303,7 +363,7 @@ void displayFaces(){
 		int target_j = 161827;
 		int mode = 0;    //0=anti-clockwise; 1=clockwise; 3=translate the face to (0,0,0)
 		if((drawOneFace && (j==target_j)) || ((!drawOneFace)&&(mode==0))){
-			
+			Point translation, p1_prime, p2_prime, p3_prime;
 			if(isDrawFaceNormal){
 				glDisable(GL_LIGHTING);
 				if(mode==3){ //translate a face to (0,0,0)
@@ -364,16 +424,16 @@ void displayFaces(){
 				//glEnable(GL_LIGHTING);
 
 			}
-		/*
-		 outfile<<" rendering vertex1: ["<<p1.x()+offsetx<<","<<p1.y()+offsety<<","<<p1.z()+offsetz<<"]"<<endl;
-		 outfile<<" rendering vertex2: ["<<p2.x()+offsetx<<","<<p2.y()+offsety<<","<<p2.z()+offsetz<<"]"<<endl;
-		 outfile<<" rendering vertex3: ["<<p3.x()+offsetx<<","<<p3.y()+offsety<<","<<p3.z()+offsetz<<"]"<<endl;
-		 outfile<<" ------------------ "<<endl;	*/
+
+		// outfile<<" rendering vertex1: ["<<p1.x()+offsetx<<","<<p1.y()+offsety<<","<<p1.z()+offsetz<<"]"<<endl;
+		// outfile<<" rendering vertex2: ["<<p2.x()+offsetx<<","<<p2.y()+offsety<<","<<p2.z()+offsetz<<"]"<<endl;
+		// outfile<<" rendering vertex3: ["<<p3.x()+offsetx<<","<<p3.y()+offsety<<","<<p3.z()+offsetz<<"]"<<endl;
+		// outfile<<" ------------------ "<<endl;
 	}//end for
 	 // drawCube(dx,dy,dz, osx, osy, osz);
 }
 
-void idle(void){
+void RenderManager::idle(void){
 	glutSetWindow(controlPanel_window);
 	glutPostRedisplay();
 	glutSetWindow(text_window);
@@ -382,17 +442,8 @@ void idle(void){
 	glutPostRedisplay();
 }
 
-//Display func for main window
-void display(){
-	
-	glutSetWindow(main_window);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glutSwapBuffers();
-	glFlush();
-}
-
-//Display func for Object Window 1
-void renderSceneow() {
+//Display func for Object Window
+void RenderManager::renderSceneOW() {
 	
 	glutSetWindow(object_window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -400,110 +451,303 @@ void renderSceneow() {
 	glMatrixMode(GL_PROJECTION);
 	//glPushMatrix();		//save previous matrix - contains settings for perspective projection
 	glLoadIdentity();		//reset matrix  // glTranslatef(0., 0., -4.);
-	gluPerspective(40., width/height, 0.1, 60.);   //set clipping volume
+	gluPerspective(40., camera->getWindowWidth()/camera->getWindowHeight(), 0.1, 60.);   //set clipping volume
 	glTranslatef(0., 0., -3.);
 	
 	//start_animation(40);                   //update a z-slice every 40 frames
 	displayFaces();
 	glDisable(GL_LIGHTING);
-		//displayNormal();
+	//displayNormal();
+
+	// draw a unit wireframe cube around the rendered volume
 	renderWireFrame(1.,1.,1.,1.,1.);       //borderwidth,r,g,b,a
+
+	// draw the coordinate axes
 	displayLines();
+
+	// turn on the lights
 	glEnable(GL_LIGHTING);
-	
 	//renderLightObjects();
+	
 	//setOrthogrpahicProjection();
 	glutSwapBuffers();
 	glFlush();
 }
+
 //Display func for Control Panel Window
-void renderScenecpw(){
-	
-	glClearColor(0.5, 0.5, 0.5, 1.);
+void RenderManager::renderSceneCPW(){
+
 	glutSetWindow(controlPanel_window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
+#ifdef USE_GLUI
+	if (mousex_text != NULL) mousex_text->set_int_val(input_processor->getMouseX());
+	if (mousey_text != NULL) mousey_text->set_int_val(input_processor->getMouseY());
+
+	for (short i=0; i<10; i++)
+		if (camera->restoreStateAvailable(i)) camera_restore_buttons[i]->enable();
+		else camera_restore_buttons[i]->disable();
+#else
 	//render Control Panel
 	char s0[1000], s1[1000];
+
 	sprintf(s0,"isovalue=%0.2f", CONF.cf_isoVal);
 	renderString(-0.5,0.0,s0);
-		//sprintf(s,"Opacity=%0.3f", effective_opacity);
-	sprintf(s1,"x,y = %i,%i", screen_x, screen_y);
+
+	sprintf(s1,"x,y = %i,%i", input_processor->getMouseX(), input_processor->getMouseY());
 	renderString(-0.5,-0.1,s1);
+#endif
+
 	glutSwapBuffers();
 	glFlush();
 }
 
 //Display func for text Window
-void renderScenetw(){
-	
-	glClearColor(0.8, 0.8, 0.6, 1.);
+void RenderManager::renderSceneTW(){
 	glutSetWindow(text_window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-    bool animateSlice = false;
-	//render text
-    renderText(animateSlice);
+	//char s0[1000];
+	//sprintf(s0,"Put text here ...");
+	//renderString(-0.5,0.0,s0);
+
 	glutSwapBuffers();
 	glFlush();
 }
-void renderWireFrame(float borderwidth, float r, float g, float b, float a){
-	
-	glColor4f(r, g, b, a);
-	glutWireCube(borderwidth);
-	
-}
-void displayLines(){
-	
-	float offset_Lx = -0.55, offset_Ly = -0.55, offset_Lz = 0.55;
-	glBegin(GL_LINES);
-		glColor3f(1., 0., 0.);
-		glVertex3f(0.+offset_Lx,0.+offset_Ly,0.+offset_Lz);				//x-axis
-		glVertex3f(0.3+offset_Lx,0.+offset_Ly,0.+offset_Lz);
-	
-		glColor3f(0., 1., 0.);
-		glVertex3f(0.+offset_Lx,0.+offset_Ly,0.+offset_Lz);				//y-axis
-		glVertex3f(0.+offset_Lx,0.3+offset_Ly,0.+offset_Lz);
-	
-		glColor3f(0., 0., 1.);
-		glVertex3f(0.+offset_Lx,0.+offset_Ly,0.+offset_Lz);				//z-axis
-		glVertex3f(0.+offset_Lx,0.+offset_Ly,-0.3+offset_Lz);
-	glEnd(); 
-	
-	glBegin(GL_LINES);
-		glColor3f(1,0,0); glVertex3f(.5, 0.0, 0.0);  glVertex3f(1.0, 0.0, 0.0);
-		glColor3f(0,1,0); glVertex3f(0.0, 0.5, 0.0); glVertex3f(0.0, 1.0, 0.0);
-		glColor3f(0,0,1); glVertex3f(0.0, 0.0, 0.5); glVertex3f(0.0, 0.0, 1.0);
-	glEnd();
-	
-	glBegin(GL_LINES);
-		glColor3f(1,0,0); glVertex3f(-0.5, 0.0, 0.0); glVertex3f(-1.0, 0.0, 0.0);
-		glColor3f(0,1,0); glVertex3f(0.0, -0.5, 0.0); glVertex3f(0.0, -1.0, 0.0);
-		glColor3f(0,0,1); glVertex3f(0.0, 0.0, -0.5); glVertex3f(0.0, 0.0, -1.0);
-	glEnd();
-	
-}
-void init(){
-	
+
+void RenderManager::initOW(){
+	object_window = glutCreateSubWindow(main_window, 0, 0, 700, 700);
+	if (camera != NULL) delete camera;
+	if (input_processor != NULL) delete input_processor;
+	camera = new Camera(object_window);
+	input_processor = new InputProcessor(camera);
+	glutDisplayFunc(renderSceneOW);
+
 	glEnable(GL_DEPTH_TEST);
-		//glPolygonMode(GL_FRONT, GL_FILL);
-    //glutKeyboardFunc(keyboard);
+	//glPolygonMode(GL_FRONT, GL_FILL);
+	glutKeyboardFunc(keyboardOW);
 	//glutSpecialFunc(specialKey);
-	 
-	 glutMouseFunc(mouse);
-	 glutMotionFunc(motion);
-	 glutPassiveMotionFunc(passive_motion);
+	glutMouseFunc(mouseOW);
+	glutMotionFunc(motionOW);
+	glutPassiveMotionFunc(passive_motionOW);
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	glShadeModel (GL_SMOOTH);
 	
-	if(!BothFaces){
+	if(!bothFaces){
 		//suppress backfaces
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 	}
 	
-	lm.setup_lightObject();
-	lm.light0_distance(20.);
-		//setMaterial();
+	light_manager.setup_lightObject();
+	light_manager.light0_distance(20.);
+	//setMaterial();
 	setMaterial_using_glColor();
+
+	// flip the image upside-down at the start
+	camera->doRotationAngleAxis(180.0,1.,0.,0.);
+}
+
+void RenderManager::cameraButton(int id) {
+	if (input_processor == NULL) return;
+	if (id == 1) {
+		input_processor->keyboard('a',0,0);
+	}
+	else if (id == 2) {
+		input_processor->keyboard('w',0,0);
+	}
+	else if ((id >=100) && (id < 200)) {
+		if (input_processor != NULL) {
+			input_processor->keyboard('r',0,0);
+			input_processor->keyboard(char('0'+(id-100)),0,0);
+		}
+	}
+	else if ((id >=200) && (id < 300)) {
+		if (input_processor != NULL) {
+			input_processor->keyboard('s',0,0);
+			input_processor->keyboard(char('0'+(id-200)),0,0);
+		}
+	}
+}
+
+void RenderManager::initCPW(){
+	controlPanel_window = glutCreateSubWindow(main_window, 700, 0, 300, 750);
+	glutDisplayFunc(renderSceneCPW);
+	glEnable(GL_DEPTH_TEST);
+#ifdef USE_GLUI
+	gluiCPW = GLUI_Master.create_glui_subwindow(controlPanel_window, GLUI_SUBWINDOW_TOP);
+	GLUI_Master.set_glutKeyboardFunc(keyboardCPW);
+	GLUI_Master.set_glutMouseFunc(mouseCPW);
+	glutMotionFunc(motionCPW);
+	glutPassiveMotionFunc(passive_motionCPW);
+
+	GLUI_Panel* panel1 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
+	GLUI_EditText* isovalue_text = new GLUI_EditText(panel1, "isovalue:", &(CONF.cf_isoVal));
+	isovalue_text->disable();
+	// This is slightly dangerous. The addresses given to GLUI_EditText should
+	// not be local variables, since edits from UI would be placed here.
+	// In this case, it is okay, since the editors are disabled.
+	// (Probably there is a non-editable widget that should be used here.)
+	int mousex = input_processor->getMouseX();
+	int mousey = input_processor->getMouseY();
+	mousex_text = new GLUI_EditText(panel1, "mouse x:", &mousex);
+	mousey_text = new GLUI_EditText(panel1, "mouse y:", &mousey);
+	mousex_text->disable();
+	mousey_text->disable();
+
+	GLUI_Panel* panel2 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
+	new GLUI_Button(panel2, "Load Camera Settings", 1, (GLUI_Update_CB)cameraButton);
+	for (short i=0; i<10; i++) {
+		char s[100];
+		sprintf(s, "restore %d",i);
+		camera_restore_buttons[i] = new GLUI_Button(panel2, s, 100+i, (GLUI_Update_CB)cameraButton);
+	}
+	new GLUI_Column(panel2);
+	new GLUI_Button(panel2, "Save Camera Settings", 2, (GLUI_Update_CB)cameraButton);
+	for (short i=0; i<10; i++) {
+		char s[100];
+		sprintf(s, "save %d",i);
+		new GLUI_Button(panel2, s, 200+i, (GLUI_Update_CB)cameraButton);
+	}
+
+	GLUI_Panel* panel3 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
+	new GLUI_Button(panel3, "quit", 0, (GLUI_Update_CB)exit);
+#else
+	glutKeyboardFunc(keyboardCPW);
+	glutMouseFunc(mouseCPW);
+	glutMotionFunc(motionCPW);
+	glutPassiveMotionFunc(passive_motionCPW);
+#endif
+	glClearColor(0.6, 0.1, 0.3, 0.0);
+}
+
+void RenderManager::initTW(){
+	text_window = glutCreateSubWindow(main_window, 0, 700, 700, 50);
+	glutDisplayFunc(renderSceneTW);
+	glEnable(GL_DEPTH_TEST);
+#ifdef USE_GLUI
+	// Enable this if controls are added to the text window
+	//gluiTW = GLUI_Master.create_glui_subwindow(text_window, GLUI_SUBWINDOW_TOP);
+	//GLUI_Master.set_glutKeyboardFunc(keyboardTW);
+	//GLUI_Master.set_glutMouseFunc(mouseTW);
+	//glutMotionFunc(motionTW);
+	//glutPassiveMotionFunc(passive_motionTW);
+	//new GLUI_Button(gluiTW, "Quit", 0, (GLUI_Update_CB)exit);
+#else
+	glutKeyboardFunc(keyboardTW);
+	glutMouseFunc(mouseTW);
+	glutMotionFunc(motionTW);
+	glutPassiveMotionFunc(passive_motionTW);
+#endif
+	glClearColor(0.3, 0.6, 0.1, 0.0);
+}
+
+void RenderManager::setProjection(int window, int x, int y, int w, int h)
+{
+	glutSetWindow(window);
+	glutPositionWindow(x, y);
+	glutReshapeWindow(w, h);
+	// Reset the coordinate system before modifying
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	// Set the viewport to be the entire window
+    glViewport(x, y, w, h);
+	// Set the perspective projection matrix
+	if (h == 0) h = 1; // Prevent a divide by zero
+	gluPerspective(45,float(w)/h,0.1,100);
+	// step back just a bit
+	glTranslatef(0., 0., -4.);
+	// return to model view coordinate system
+	glMatrixMode(GL_MODELVIEW);
+}
+
+// reshape is called by GLUT when window is reshaped
+void RenderManager::reshape(int w, int h){
+
+	// determine dimensions of each sub-window, relative to the full window
+
+	// object window
+	int ow_x = 0;
+	int ow_y = 0;
+	int ow_w = 0.7*w;
+	int ow_h = 0.93*h;
+	// control panel
+	int cp_x = ow_x + ow_w;
+	int cp_y = ow_y;
+	int cp_w = w - ow_w;
+	int cp_h = h;
+	// text window
+	int tw_x = ow_x;
+	int tw_y = ow_y + ow_h;
+	int tw_w = ow_w;
+	int tw_h = h - ow_h;
+
+	// reposition and resize each sub-window.
+	setProjection(object_window, ow_x, ow_y, ow_w, ow_h);
+	setProjection(controlPanel_window, cp_x, cp_y, cp_w, cp_h);
+	setProjection(text_window, tw_x, tw_y, tw_w, tw_h);
+
+	// tell the camera about the new dimensions of the object window
+	if (camera != NULL) camera->reshape(ow_w,ow_h);
+}
+
+// mouse is called by GLUT when a mouse button is pressed or released
+void RenderManager::mouseOW(int button, int state, int x, int y) {
+	if (input_processor != NULL) input_processor->mouse(button, state, x, y);
+}
+void RenderManager::mouseCPW(int button, int state, int x, int y) {
+}
+void RenderManager::mouseTW(int button, int state, int x, int y) {
+}
+
+// motion is called by GLUT when mouse is moved within the window with a button pressed
+void RenderManager::motionOW(int x, int y) {
+	if (input_processor != NULL) input_processor->motion(x, y);
+}
+void RenderManager::motionCPW(int x, int y) {
+}
+void RenderManager::motionTW(int x, int y) {
+}
+
+// passive_motion is called by GLUT when mouse is moved within the window with no button pressed
+void RenderManager::passive_motionOW(int x, int y) {
+	if (input_processor != NULL) input_processor->passive_motion(x, y);
+}
+void RenderManager::passive_motionCPW(int x, int y) {
+}
+void RenderManager::passive_motionTW(int x, int y) {
+}
+
+// keyboard is called by GLUT when an ASCII key is pressed
+void RenderManager::keyboardOW(unsigned char key, int x, int y) {
+	if (input_processor != NULL) input_processor->keyboard(key, x, y);
+}
+void RenderManager::keyboardCPW(unsigned char key, int x, int y) {
+}
+void RenderManager::keyboardTW(unsigned char key, int x, int y) {
+}
+
+void RenderManager::initialize(int* pargc, char** argv) {
+
+	glutInit(pargc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+
+	glutInitWindowSize(1000,750);
+	glutInitWindowPosition(100, 50);
+	main_window = glutCreateWindow("Volume Visualization using - Marina Doherty ( TL:MC July, 2013)");
+
+	//Register callback routines for main window
+	//glutDisplayFunc(RenderManager::displayFaces);
+#ifdef USE_GLUI
+	GLUI_Master.set_glutReshapeFunc(reshape);
+	GLUI_Master.set_glutIdleFunc(idle);
+#else
+	glutReshapeFunc(reshape);
+	glutIdleFunc(idle);
+#endif
+
+	// set up the sub-windows
+	initOW();	// object window
+	initCPW();	// control panel window
+	initTW();	// text window
 }

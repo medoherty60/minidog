@@ -6,10 +6,8 @@
  *  Copyright 2011 __MyCompanyName__. All rights reserved.
  *
  */
-#include <GL/glut.h>
-#include <stdio.h>
 
 void renderBitmapString(float x, float y, float z, void *font, char *string);
 void renderString(float x, float y, char* string);
-void renderText(GLint);
+void renderText(int);
 //void renderAllText(bool animateSlice);

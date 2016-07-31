@@ -6,7 +6,6 @@
  *  Marina Doherty on 6/19/12.
  *
  */
-#include <GL/glut.h>
 
 class LightManager{
 public:
@@ -88,13 +87,13 @@ public:
 	void setup_lightObject();
 
 private:
-	GLfloat light0_position[3], light1_position[3];
-	GLfloat white_light[4], light0_diffuse[4], light0_specular[4], light0_ambient[4];
-	GLfloat light1_diffuse[4], light1_specular[4];
-	GLfloat lmodel_ambient[4];
-	GLfloat lightparam[1];
+	float light0_position[3], light1_position[3];
+	float white_light[4], light0_diffuse[4], light0_specular[4], light0_ambient[4];
+	float light1_diffuse[4], light1_specular[4];
+	float lmodel_ambient[4];
+	float lightparam[1];
 };
 
-extern LightManager lm;
+extern LightManager light_manager;
 #endif
 

@@ -30,7 +30,7 @@ bool FileManager::readDataFormat(char* file_name, Configurations& conf){
 	int largest_dim=0;
    
     //char* fdir = (char*) "/Users/msdoherty/Desktop/MyDocuments/Davis-Research/Research-Max/3D_Canny/build/Debug/data/MERISTEM_213x170x168/";
-    char* fdir = (char*) "/home/mdoherty/workspace/MC_TL/dataFile/MERISTEM_213x170x168/";
+    char* fdir = (char*) "./dataFile/MERISTEM_213x170x168/";
     char* xdir = (char*) "";
     
     // char* fdir = (char*) "/Users/msdoherty/Desktop/MyDocuments/Davis-Research/Research-Max/3D_Canny/build/Debug/";

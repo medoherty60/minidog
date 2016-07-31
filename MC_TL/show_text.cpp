@@ -3,11 +3,14 @@
 // http://www.lighthouse3d.com/opengl/glut/index.php?bmpfont and
 // http://www.lighthouse3d.com/opengl/glut/index.php?bmpfontortho
 
+#include <GL/glut.h>
 #include "show_text.h"
+
 void renderBitmapString(float x, float y, float z, void *font, char *string) 
 {  
   char *c;
-  glRasterPos3f(x, y,z);
+  glColor3f(0.0, 0.0, 0.);
+  glRasterPos3f(x,y,z);
   for (c=string; *c != '\0'; c++) glutBitmapCharacter(font, *c);
 }
 
@@ -18,8 +21,8 @@ void renderString(float x, float y, char* string)
 	renderBitmapString(x ,y, 0, GLUT_BITMAP_HELVETICA_18, string);
 	glPopMatrix();		//restore orientation of coordinate systems
 }
-void renderText(int){
-	
+
+void renderText(int) {
 	char s[1000];
 	glColor3f(0., 0., 0.);
 //	sprintf(s,"fps=%0.2f",frame_rate);

@@ -18,20 +18,20 @@ public:
 	short activeCorners;	      //number of corners that are smaller than isovalues (0-8)
 	short cornerFlag;		      //bits
 	vector<short> cornerPos;      //vector of corner positions
-	
+
 	vector<Color> colors;
 	Color color, red, green, blue, yellow, magenta, white, gray, lightblue;
 
 public: 
-	Cube() : cornerFlag(0), activeCorners(0), 
+	Cube() : cornerFlag(0), activeCorners(0),
 		     red(.5,0.,0.), green(0.0,0.5,0.), blue(0.0,0.,0.5), yellow(0.5,0.5,0.),
 		     magenta(1.0,0.,1.), white(1.,1.,1.), gray(.5,.5,.5), lightblue(.2,0.8,1.){
-				 
+
 				 colors.resize(8);
-				 colors[0]=red;			colors[4]=magenta; 
-				 colors[1]=green;		colors[5]=white; 
-				 colors[2]=blue;		colors[6]=gray; 
-				 colors[3]=yellow;		colors[7]=lightblue; 
+				 colors[0]=red;			colors[4]=magenta;
+				 colors[1]=green;		colors[5]=white;
+				 colors[2]=blue;		colors[6]=gray;
+				 colors[3]=yellow;		colors[7]=lightblue;
 				 
 				 setColor(0);
 	}

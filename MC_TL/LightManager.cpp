@@ -4,8 +4,9 @@
  */
 
 #include "LightManager.h"
+#include <GL/glut.h>
 
-LightManager lm;
+LightManager light_manager;
 
 void LightManager::setup_lightObject(){
 

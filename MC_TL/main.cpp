@@ -1,5 +1,8 @@
 #include "FileManager.h"
 #include "RenderManager.h"
+#include "MarchingCubes.h"
+#include <GL/glut.h>
+
 /*
  Project Name: MC_Algorithm_TL
  Creation Date: Dec 29, 2012
@@ -19,6 +22,7 @@ static float getTime(){
 	cout<< "curr_time: "<<t<<" sec"<<endl;
 	return (t);
 }
+
 int main(int argc, char** argv) {
 	
 	//QApplication* app = new QApplication(argc, argv);
@@ -83,29 +87,9 @@ int main(int argc, char** argv) {
 	//sliderWindow *sw = new sliderWindow(app); 
 	
 	//-- Step 7: Rendering --
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-	glutInitWindowSize(width, height);
-	glutInitWindowPosition(100, 50);
-	main_window = glutCreateWindow("Volume Visualization using - Marina Doherty ( TL:MC July, 2013)");
-	
-	//Register callback routines for main window
-	glutDisplayFunc(displayFaces);
-	glutReshapeFunc(reshape);
-	glutIdleFunc(idle);
-	
-	object_window = glutCreateSubWindow(main_window, 0, 0, 700, 700);
-	glutDisplayFunc(renderSceneow);
-	init();
-	
-	controlPanel_window = glutCreateSubWindow(main_window, 700, 0, 300, 750);
-	glutDisplayFunc(renderScenecpw);
-	
-	text_window = glutCreateSubWindow(main_window, 0, 700, 700, 50);
-	glutDisplayFunc(renderScenetw);
-
+	RenderManager::initialize(&argc, argv);
 	glutMainLoop();
-	//app->exec();
+
 	return 0;
 }
 
