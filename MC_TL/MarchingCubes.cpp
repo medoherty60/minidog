@@ -148,7 +148,8 @@ void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<floa
   }
 		 
   //-- New function to build triangle faces & gradients on original density (MSD: 20130101)
-	
+  build_ext_triangles(HEADER, shadingObj);
+
   cout<<"num of FACES="<<getNumFaces()<<endl;
   cout<<"% of FACES="<<((float)getNumFaces()/(float)(_size_x*_size_y*_size_z))*100.0<<endl;
   // for(int i=0; i<getNumFaces(); i++)
