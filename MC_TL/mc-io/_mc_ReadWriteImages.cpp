@@ -109,7 +109,7 @@ bool FileManager::readVolumeData(Matrix3D<float>& m3D_Data, MarchingCube_header&
 	int oneSlice = header.nX * header.nY;
 	float smallest=10000.0, largest=-10000.0, density=0.0;
 	float buffer1[oneSlice], buffer2[oneSlice];
-	m3D_Data.resize(header.nX , header.nX , header.nZ );
+	m3D_Data.resize(header.nX , header.nY , header.nZ );
 	
 	FILE *fp = fopen(fname, "rb");			//*fp is a FILE pointer to the next bit to be read
 
