@@ -2,8 +2,10 @@
 #define RENDERMANAGER_H
 
 #define USE_GLUI
+//#define USE_MULTISAMPLING    // multisampling doesn't work yet
 
-// FIXIT!! this should be moved to .cpp if possible
+// This include should be moved to RenderManager.cpp,
+// which would require hiding the two GLUI window pointers.
 #ifdef USE_GLUI
 #include <GL/glui.h>
 #endif

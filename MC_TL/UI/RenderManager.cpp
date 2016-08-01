@@ -574,6 +574,12 @@ void RenderManager::renderSceneOW() {
 	glLoadIdentity();		//reset matrix  // glTranslatef(0., 0., -4.);
 	gluPerspective(40., camera->getWindowWidth()/camera->getWindowHeight(), 0.1, 60.);   //set clipping volume
 	glTranslatef(0., 0., -3.);
+
+#ifdef USE_MULTISAMPLING
+    glEnable(GL_MULTISAMPLE_ARB);
+#else
+    glDisable(GL_MULTISAMPLE_ARB);
+#endif
 	
 	//start_animation(40);                   //update a z-slice every 40 frames
 	displayFaces();
@@ -601,6 +607,12 @@ void RenderManager::renderSceneCPW(){
 	glutSetWindow(controlPanel_window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#ifdef USE_MULTISAMPLING
+    glEnable(GL_MULTISAMPLE_ARB);
+#else
+    glDisable(GL_MULTISAMPLE_ARB);
+#endif
+
 #ifdef USE_GLUI
 	if (mousex_text != NULL) mousex_text->set_int_val(input_processor->getMouseX());
 	if (mousey_text != NULL) mousey_text->set_int_val(input_processor->getMouseY());
@@ -627,7 +639,12 @@ void RenderManager::renderSceneCPW(){
 void RenderManager::renderSceneTW(){
 	glutSetWindow(text_window);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
+#ifdef USE_MULTISAMPLING
+    glEnable(GL_MULTISAMPLE_ARB);
+#else
+    glDisable(GL_MULTISAMPLE_ARB);
+#endif
 	//char s0[1000];
 	//sprintf(s0,"Put text here ...");
 	//renderString(-0.5,0.0,s0);
@@ -851,8 +868,11 @@ void RenderManager::keyboardTW(unsigned char key, int x, int y) {
 void RenderManager::initialize(int* pargc, char** argv) {
 
 	glutInit(pargc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-
+#ifdef USE_MULTISAMPLING
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
+#else
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH );
+#endif
 	glutInitWindowSize(1000,750);
 	glutInitWindowPosition(100, 50);
 	main_window = glutCreateWindow("Volume Visualization using - Marina Doherty ( TL:MC July, 2013)");
