@@ -25,6 +25,14 @@ public:
 	static bool isDrawFaceNormal;
 	static int displayAmt;
 	static int displayIndex;
+	static int blackBG;
+	static int showCube;
+	static int showAxes;
+
+	// animation controls
+	static clock_t last_frame_time;
+	static float elapsed_frame_time;
+	static bool first_animation_frame;
 
 private:
 	// handles to GL windows
@@ -49,6 +57,7 @@ private:
 	static void renderSceneOW();
 	static void renderSceneCPW();
 	static void renderSceneTW();
+	static void updateAnimation();
 
 	// mouse is called by GLUT when a mouse button is pressed or released
 	static void mouseOW(int button, int state, int x, int y);

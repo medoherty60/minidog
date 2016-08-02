@@ -28,6 +28,14 @@ bool RenderManager::outputOnce = false;
 bool RenderManager::isDrawFaceNormal = false;
 int RenderManager::displayAmt = 5;
 int RenderManager::displayIndex = 0;
+int RenderManager::blackBG = 0;
+int RenderManager::showCube = 1;
+int RenderManager::showAxes = 1;
+
+// animation control
+clock_t RenderManager::last_frame_time = 0;
+float RenderManager::elapsed_frame_time = 0.0;
+bool RenderManager::first_animation_frame = true;
 
 static void copyColor(float c1[4], float c2[4]){
 	memcpy(c1, c2, 4*sizeof(float));
@@ -563,10 +571,30 @@ void RenderManager::idle(void){
 	glutPostRedisplay();
 }
 
+void RenderManager::updateAnimation() {
+	if (first_animation_frame) {
+		elapsed_frame_time = 0.0f;
+		last_frame_time = clock();
+		first_animation_frame = false;
+	}
+	else {
+		 clock_t time = clock() ;
+		 elapsed_frame_time = (double)(time - last_frame_time)/CLOCKS_PER_SEC;
+		 last_frame_time = time;
+	}
+	float angle = elapsed_frame_time;
+	camera->doRotationAngleAxis(angle*2.0,0.0,1.0,0.0);
+	camera->doRotationAngleAxis(angle,1.0,0.0,0.0);
+}
+
 //Display func for Object Window
 void RenderManager::renderSceneOW() {
 	
 	glutSetWindow(object_window);
+	if (blackBG)
+		glClearColor (0.0, 0.0, 0.0, 0.0);
+	else
+		glClearColor (1.0, 1.0, 1.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	glMatrixMode(GL_PROJECTION);
@@ -581,16 +609,23 @@ void RenderManager::renderSceneOW() {
     glDisable(GL_MULTISAMPLE_ARB);
 #endif
 	
-	//start_animation(40);                   //update a z-slice every 40 frames
+    updateAnimation();
 	displayFaces();
 	glDisable(GL_LIGHTING);
 	//displayNormal();
 
-	// draw a unit wireframe cube around the rendered volume
-	renderWireFrame(1.,1.,1.,1.,1.);       //borderwidth,r,g,b,a
+	if (showCube) {
+		// draw a unit wireframe cube around the rendered volume
+		if (blackBG)
+			renderWireFrame(1.,1.,1.,1.,1.);       //borderwidth,r,g,b,a
+		else
+			renderWireFrame(1.,0.,0.,0.,1.);
+	}
 
-	// draw the coordinate axes
-	displayLines();
+	if (showAxes) {
+		// draw the coordinate axes
+		displayLines();
+	}
 
 	// turn on the lights
 	glEnable(GL_LIGHTING);
@@ -624,11 +659,35 @@ void RenderManager::renderSceneCPW(){
 	//render Control Panel
 	char s0[1000], s1[1000];
 
-	sprintf(s0,"isovalue=%0.2f", CONF.cf_isoVal);
-	renderString(-0.5,0.0,s0);
+	sprintf(s0,"isovalue=%0.2f", HEADER.isoVal);
+	renderString(-0.5,0.6,s0);
 
 	sprintf(s1,"x,y = %i,%i", input_processor->getMouseX(), input_processor->getMouseY());
-	renderString(-0.5,-0.1,s1);
+	renderString(-0.5,0.5,s1);
+
+    char* s00 = "Keyboard controls (image window)";
+    char* s01 = "Sn = save camera state n";
+    char* s02 = "Rn = restore camera state n";
+    char* s03 = "W = write camera states to file";
+    char* s04 = "A = read camera states from file";
+    char* s05 = "K and J = move on x-axis";
+    char* s06 = "I and O = move on y-axis";
+    char* s07 = "N and M = move on z-axis";
+    char* s08 = "H and G = rotate horizontal";
+    char* s09 = "Y and U = rotate vertical";
+    char* s10 = "Q = quit program";
+    float x = -0.6, y = -0.4;
+    renderString(x,y-=0.1,s00);
+    renderString(x,y-=0.1,s01);
+    renderString(x,y-=0.1,s02);
+    renderString(x,y-=0.1,s03);
+    renderString(x,y-=0.1,s04);
+    renderString(x,y-=0.1,s05);
+    renderString(x,y-=0.1,s06);
+    renderString(x,y-=0.1,s07);
+    renderString(x,y-=0.1,s08);
+    renderString(x,y-=0.1,s09);
+    renderString(x,y-=0.1,s10);
 #endif
 
 	glutSwapBuffers();
@@ -733,6 +792,10 @@ void RenderManager::initCPW(){
 	mousex_text->disable();
 	mousey_text->disable();
 
+	new GLUI_Checkbox( panel1, "Black background", &blackBG );
+	new GLUI_Checkbox( panel1, "Show bounding cube", &showCube );
+	new GLUI_Checkbox( panel1, "Show coordinate axes", &showAxes );
+
 	GLUI_Panel* panel2 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
 	new GLUI_Button(panel2, "Load Camera Settings", 1, (GLUI_Update_CB)cameraButton);
 	for (short i=0; i<10; i++) {
@@ -750,13 +813,15 @@ void RenderManager::initCPW(){
 
 	GLUI_Panel* panel3 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
 	new GLUI_Button(panel3, "quit", 0, (GLUI_Update_CB)exit);
+	glClearColor(0.8, 0.8, 0.8, 0.0);
 #else
 	glutKeyboardFunc(keyboardCPW);
 	glutMouseFunc(mouseCPW);
 	glutMotionFunc(motionCPW);
 	glutPassiveMotionFunc(passive_motionCPW);
+	glClearColor(0.9, 0.3, 0.6, 0.0);
 #endif
-	glClearColor(0.6, 0.1, 0.3, 0.0);
+
 }
 
 void RenderManager::initTW(){
@@ -771,13 +836,15 @@ void RenderManager::initTW(){
 	//glutMotionFunc(motionTW);
 	//glutPassiveMotionFunc(passive_motionTW);
 	//new GLUI_Button(gluiTW, "Quit", 0, (GLUI_Update_CB)exit);
+	glClearColor(0.8, 0.8, 0.8, 0.0);
 #else
 	glutKeyboardFunc(keyboardTW);
 	glutMouseFunc(mouseTW);
 	glutMotionFunc(motionTW);
 	glutPassiveMotionFunc(passive_motionTW);
-#endif
 	glClearColor(0.3, 0.6, 0.1, 0.0);
+#endif
+
 }
 
 void RenderManager::setProjection(int window, int x, int y, int w, int h)

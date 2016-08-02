@@ -126,6 +126,10 @@ void InputProcessor::keyboard(unsigned char key, int x, int y)
 	{
 		if (camera != NULL) camera->doRotationScreenVector(0, -10);
 	}
+	else if ((key=='q')||(key=='Q'))
+	{
+		exit(0);
+	}
 }
 
 
