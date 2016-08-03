@@ -33,7 +33,10 @@ public:
 	static clock_t last_frame_time;
 	static float elapsed_frame_time;
 	static bool first_animation_frame;
+	static bool enable_animation;
+	static int animation_face_code;
 
+	static void resetAnimation() { animation_face_code = 0; }
 private:
 	// handles to GL windows
 	static int main_window, object_window, controlPanel_window, text_window;

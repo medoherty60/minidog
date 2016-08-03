@@ -36,6 +36,8 @@ int RenderManager::showAxes = 1;
 clock_t RenderManager::last_frame_time = 0;
 float RenderManager::elapsed_frame_time = 0.0;
 bool RenderManager::first_animation_frame = true;
+bool RenderManager::enable_animation = true;
+int RenderManager::animation_face_code = 0;
 
 static void copyColor(float c1[4], float c2[4]){
 	memcpy(c1, c2, 4*sizeof(float));
@@ -330,8 +332,9 @@ void RenderManager::displayFaces(){
 	int drawBadNormalCounter=0;
 	for (int j=0; j<global_facesVector.size(); j++) {
 	//for (int j=0; j<100; j++) {
-		
 		Face f = global_facesVector[j];
+		if (enable_animation && (f.getAnimationCode() > animation_face_code))
+			break;
 		Point p1 = f.point1(), p2 = f.point2(), p3 = f.point3();
 		Vector n1 = f.normal1(), n2=f.normal2(), n3 = f.normal3();
 		Color color = f.getColor();
@@ -570,7 +573,8 @@ void RenderManager::idle(void){
 	glutSetWindow(object_window);
 	glutPostRedisplay();
 }
-
+/*
+// auto-rotate animation
 void RenderManager::updateAnimation() {
 	if (first_animation_frame) {
 		elapsed_frame_time = 0.0f;
@@ -586,6 +590,29 @@ void RenderManager::updateAnimation() {
 	camera->doRotationAngleAxis(angle*2.0,0.0,1.0,0.0);
 	camera->doRotationAngleAxis(angle,1.0,0.0,0.0);
 }
+*/
+// selective face animation
+static int frame_count = 0;
+
+void RenderManager::updateAnimation() {
+	if (first_animation_frame) {
+		elapsed_frame_time = 0.0f;
+		last_frame_time = clock();
+		first_animation_frame = false;
+		animation_face_code = 0;
+	}
+	else {
+		 clock_t time = clock() ;
+		 elapsed_frame_time = (double)(time - last_frame_time)/CLOCKS_PER_SEC;
+		 last_frame_time = time;
+		 frame_count++;
+		 if (frame_count >= 10) {
+			 animation_face_code+=1;
+			 frame_count = 0;
+		 }
+	}
+}
+
 
 //Display func for Object Window
 void RenderManager::renderSceneOW() {
@@ -609,8 +636,8 @@ void RenderManager::renderSceneOW() {
     glDisable(GL_MULTISAMPLE_ARB);
 #endif
 	
-    updateAnimation();
-	displayFaces();
+    if (enable_animation) updateAnimation();
+    displayFaces();
 	glDisable(GL_LIGHTING);
 	//displayNormal();
 

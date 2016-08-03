@@ -25,6 +25,8 @@
 #include "Face.h"
 #include "global.h"
 
+static int dummy_anim_code=1;
+
 // step size of the arrays of vertices and triangles
 #define ALLOC_SIZE 65536
 
@@ -69,12 +71,13 @@ MarchingCubes::~MarchingCubes()
 //_____________________________________________________________________________
 
 
-
+Matrix3D<float>* cubeMarksObjHack = NULL;
 //_____________________________________________________________________________
 // main algorithm
 void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<float>* shadingObj, Matrix3D<float>* cubeMarksObj)
 //-----------------------------------------------------------------------------
 {
+	cubeMarksObjHack = 	cubeMarksObj;
   clock_t time = clock() ;
 
   compute_intersection_points( iso ) ;
@@ -951,6 +954,14 @@ void MarchingCubes::build_ext_triangles(MarchingCube_header& mcHeader, Matrix3D<
 
 
 		f.addOneFace(ptv, nlv);
+
+		// extract
+
+		int cube_x = _vertices[v1_idx].x;
+		int cube_y = _vertices[v1_idx].y;
+		int cube_z = _vertices[v1_idx].z;
+		dummy_anim_code = int(cubeMarksObjHack->get(cube_x, cube_y, cube_z)) >> 2;
+		f.setAnimationCode(dummy_anim_code);
 		global_facesVector.push_back(f);
 	}
 	printf("   %d n_extern_faces build \n", _ntrigs ) ;

@@ -17,6 +17,7 @@ private:
 	Cube* shadowCube;
 	Color face_color;
 	int drawFaceFlag, faceID, numberFaces, isReversed;
+	long animation_code;
 	
 public:
 	
@@ -26,6 +27,7 @@ public:
 		faceID=0;
 		isReversed=0;
 		shadowCube = NULL;
+		animation_code = 0;
 	}
 	//new function
 	void addOneFace(vector<Point>& _triPoints, vector<Vector>& _normalVectors){
@@ -66,6 +68,9 @@ public:
 
 	Color getColor() { return face_color; }
 	
+	void setAnimationCode(int code) { animation_code = code; }
+	int getAnimationCode() { return animation_code; }
+
 	float r() { return face_color.red(); }
 	float g() { return face_color.green(); }
 	float b() { return face_color.blue(); }

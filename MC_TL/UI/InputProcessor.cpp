@@ -5,6 +5,7 @@
  *      Author: Marina Doherty
  */
 #include <GL/glut.h>
+#include "RenderManager.h"
 #include "InputProcessor.h"
 #include "Camera.h"
 
@@ -129,6 +130,10 @@ void InputProcessor::keyboard(unsigned char key, int x, int y)
 	else if ((key=='q')||(key=='Q'))
 	{
 		exit(0);
+	}
+	else if ((key=='z')||(key=='Z'))
+	{
+		RenderManager::resetAnimation();
 	}
 }
 
