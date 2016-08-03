@@ -1,0 +1,20 @@
+1) sphere (all thresholds) 18conn no 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+
+2) sphere (all thresholds) 6conn no 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+
+3) sphere (all thresholds) 18conn with 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+
+4) sphere (all thresholds) 6conn with 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+
+
+
+
+
+
+
+3) sphere NoDenThreshold & NoRelaxThreshold
+150 150 150 sphere_volume_150x150x150 5000 3700 0 0 0 0 1 1 /home/mdoherty/workspace/Canny3D/data1

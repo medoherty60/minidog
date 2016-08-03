@@ -1,0 +1,21 @@
+Experiment: Compare 6conn with 24conn
+Date: Jul 8, 2016
+
+1) Run with density threshold off 
+- too many final cubes are marked (64%); possibly caused by 4-adjacency expansion
+- upThreshold: [6,0]
+
+2) Run with density threshold off and 4-adjacancy off
+- 4-adjacancy was off;
+- still too many final cubes are marked (48%); possibly caused by low threshold not set
+- upThreshold: [6, 0]
+
+3) Run with density threshold off, 4-adjacancy off and set low threshold
+- final cubes are marked (0.5%); 
+- upThreshold: [12, 5]
+
+III) Run with density threshold
+
+IV) Run with density threshold & relaxation
+
+*************

@@ -1,0 +1,11 @@
+I) Run with density threshold off
+
+213 170 168 MERISTEM80_2_213x170x168_XZ_8 6 0 0 0 0 0 1 1 /home/mdoherty/workspace/Canny3D/data1
+
+II) Run with density threshold
+
+213 170 168 MERISTEM80_2_213x170x168_XZ_8 6 0 120 90 0 0 1 1 /home/mdoherty/workspace/Canny3D/data1
+
+III) Run with density threshold & relaxation
+
+213 170 168 MERISTEM80_2_213x170x168_XZ_8 6 0 120 90 120 75 1 1 /home/mdoherty/workspace/Canny3D/data1

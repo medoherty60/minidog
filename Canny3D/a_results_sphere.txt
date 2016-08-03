@@ -1,0 +1,38 @@
+Experiment: Initial synthetic data tests
+Date: Jul 8, 2016
+
+1) sphere (all thresholds) 18conn no 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+experiment[2016-07-08-21-11][sphere_volume_150x150x150]
+	int relax_flag = 0;
+	int orig_flag = 1;
+	int adj4_flag = 0;
+	
+result: sphere01.raw, Solid sphere. Limited seed points with proper expansion.
+
+2) sphere (all thresholds) 6conn no 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+experiment[2016-07-08-21-50][sphere_volume_150x150x150]
+	int relax_flag = 0;
+	int orig_flag = 2;
+	int adj4_flag = 0;
+	
+result: sphere02.raw, identical to previous experiment, but required more passes.
+
+3) sphere (all thresholds) 18conn with 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+experiment[2016-07-08-22-04][sphere_volume_150x150x150]
+	int relax_flag = 0;
+	int orig_flag = 1;
+	int adj4_flag = 1;
+	
+result: sphere03.raw, Adds cubes along the surface that were missed in experiment 1
+
+4) sphere (all thresholds) 6conn with 4-adjacency
+150 150 150 sphere_volume_150x150x150 100 0 1000 -1000 1000 -1000 1 1 /home/mdoherty/workspace/Canny3D/data1
+experiment[2016-07-08-22-54][sphere_volume_150x150x150]
+	int relax_flag = 0;
+	int orig_flag = 2;
+	int adj4_flag = 1;
+	
+result: sphere04.raw, sphere04-sphere02 is identical to sphere03-sphere01
