@@ -288,7 +288,15 @@ void surfaceExpansion_Relax2(vector<Point>* new_queue, Point& p, int adj4_flag=0
 						
 							if (jx >= 0 && jy >= 0 && jz >= 0 ){
 								if ( cubes.get(jx, jy, jz) ) continue;
-								cubes.set(jx, jy, jz, 2);
+								// start:ANIMTEST:160802
+								//cubes.set(jx, jy, jz, 2);
+								char pc;
+								if (pass > 31) pc = 31;
+								else pc = pass;
+								char c = (pc << 2) | 2;
+								cubes.set(jx, jy, jz, c);
+								if (pass > 0) cout << "{" << pass << "," << int(c) << "}";
+								// end:ANIMTEST:160802
 								new_queue->push_back(Point(jx, jy, jz));
 							}
 						}
@@ -297,7 +305,15 @@ void surfaceExpansion_Relax2(vector<Point>* new_queue, Point& p, int adj4_flag=0
 						jx = kx; jy=ky; jz=kz;
 						if (jx >= 0 && jy >= 0 && jz >= 0 ){
 							if ( cubes.get(jx, jy, jz) ) continue;
-							cubes.set(jx, jy, jz, 2);
+							// start:ANIMTEST:160802
+							//cubes.set(jx, jy, jz, 2);
+							char pc;
+							if (pass > 31) pc = 31;
+							else pc = pass;
+							char c = (pc << 2) | 2;
+							cubes.set(jx, jy, jz, c);
+							if (pass > 0) cout << "{" << pass << "," << int(c) << "}";
+							// end:ANIMTEST:160802
 							new_queue->push_back(Point(jx, jy, jz));
 						}
 					}

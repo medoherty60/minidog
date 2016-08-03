@@ -35,6 +35,71 @@ int Canny3D::eight_edge_neighbor_increment[3][8][3]
  { {-1, 0, 0}, {-1, 0, -1}, {0, 0, -1} },    //process y
  { {-1, 0, 0}, {-1, -1, 0}, {0, -1, 0} } };  //process z 
  */
+// start:ANIMTEST:160802
+void Canny3D::filterCubes(Matrix3D<char>& data){
+
+	int white = 255;
+	int grey = 160;
+	int light_grey =80;
+	int black = 0;
+
+	float min_value = 10000, max_value =-10000;
+	int count_higher =0, count_lower=0, count_remaining=0;
+
+	float min_value2 = 10000, max_value2 =-10000;
+	int count_higher2 =0, count_lower2=0, count_remaining2=0;
+
+	float min_value3 = 10000, max_value3 =-10000;
+	int count_higher3 =0, count_lower3=0, count_remaining3=0;
+
+	for(int z=0; z<slice; z++)
+		for(int y=0; y<height; y++)
+			for(int x=0; x<width; x++){
+
+				char c1 = cubes.get(x,y,z);
+				char c2 = c1 & 3;
+
+				if(c2==1){
+					//data.set(x,y,z, white);
+					data.set(x,y,z,c1);
+					if(m3D_Data->get(x,y,z) < min_value) min_value = m3D_Data->get(x,y,z);
+					if(m3D_Data->get(x,y,z) > max_value) max_value = m3D_Data->get(x,y,z);
+
+					if(m3D_Data->get(x,y,z) >= ts->get_density(HIGH)) count_higher++;
+					if(m3D_Data->get(x,y,z) < ts->get_density(LOW)) count_lower++;
+					if(m3D_Data->get(x,y,z) > ts->get_density(LOW) && m3D_Data->get(x,y,z) <= ts->get_density(HIGH)) count_remaining++;
+
+				}
+				else if(c2==2){
+					//data.set(x,y,z, grey);
+					data.set(x,y,z,c1);
+					if(m3D_Data->get(x,y,z) < min_value2) min_value2 = m3D_Data->get(x,y,z);
+					if(m3D_Data->get(x,y,z) > max_value2) max_value2 = m3D_Data->get(x,y,z);
+
+					if(m3D_Data->get(x,y,z) >= ts->get_density(HIGH)) count_higher2++;
+					if(m3D_Data->get(x,y,z) < ts->get_density(LOW)) count_lower2++;
+					if(m3D_Data->get(x,y,z) > ts->get_density(LOW) && m3D_Data->get(x,y,z) < ts->get_density(HIGH)) count_remaining2++;
+				}
+				else if(c2>=3){
+					//data.set(x,y,z, light_grey);
+					data.set(x,y,z,c1);
+					if(m3D_Data->get(x,y,z) < min_value3) min_value3 = m3D_Data->get(x,y,z);
+					if(m3D_Data->get(x,y,z) > max_value3) max_value3 = m3D_Data->get(x,y,z);
+
+					if(m3D_Data->get(x,y,z) >= ts->get_density(HIGH)) count_higher3++;
+					if(m3D_Data->get(x,y,z) < ts->get_density(LOW)) count_lower3++;
+					if(m3D_Data->get(x,y,z) > ts->get_density(LOW) && m3D_Data->get(x,y,z) < ts->get_density(HIGH)) count_remaining3++;
+				}
+			}
+
+	cout<<"Cubes (mark as 1) [>=image_high,<image_low, remaining] = ["<<count_higher<<", "<<count_lower<<", "<<count_remaining<<"]"<<endl;
+	cout<<"Cubes (mark as 1) [min,max] density values = ["<<min_value<<", "<<max_value<<"]"<<endl;
+	cout<<"Cubes (mark as 2) [>=image_high,<image_low, remaining] = ["<<count_higher2<<", "<<count_lower2<<", "<<count_remaining2<<"]"<<endl;
+	cout<<"Cubes (mark as 2) [min,max] density values = ["<<min_value2<<", "<<max_value2<<"]"<<endl;
+	cout<<"Cubes (mark as 3) [>=image_high,<image_low, remaining] = ["<<count_higher3<<", "<<count_lower3<<", "<<count_remaining3<<"]"<<endl;
+	cout<<"Cubes (mark as 3) [min,max] density values = ["<<min_value3<<", "<<max_value3<<"]"<<endl;
+}
+/*
 void Canny3D::filterCubes(Matrix3D<char>& data){
 
 	int white = 255;
@@ -93,7 +158,8 @@ void Canny3D::filterCubes(Matrix3D<char>& data){
 	cout<<"Cubes (mark as 3) [>=image_high,<image_low, remaining] = ["<<count_higher3<<", "<<count_lower3<<", "<<count_remaining3<<"]"<<endl;
 	cout<<"Cubes (mark as 3) [min,max] density values = ["<<min_value3<<", "<<max_value3<<"]"<<endl;
 }
-
+*/
+// end:ANIMTEST:160802
 /*
 void Canny3D::writeToStrengthFiles(){
 	
@@ -239,8 +305,3 @@ void Canny3D::print_relax(){
 	cout<<"selected cubes percentage="<<((float)count_cubes/(float)(width*height*slice))*100<<endl<<endl;
 	
 }
-
-
-
-
-
