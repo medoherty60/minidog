@@ -334,7 +334,7 @@ void RenderManager::displayFaces(){
 	//for (int j=0; j<100; j++) {
 		Face f = global_facesVector[j];
 		if (enable_animation && (f.getAnimationCode() > animation_face_code))
-			break;
+			continue;
 		Point p1 = f.point1(), p2 = f.point2(), p3 = f.point3();
 		Vector n1 = f.normal1(), n2=f.normal2(), n3 = f.normal3();
 		Color color = f.getColor();

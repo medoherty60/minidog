@@ -20,6 +20,7 @@ void PetitUsage(char *exec)
     fprintf(stderr,"\tSee the help for more details (-h).\n");
     return;
 }
+extern int pcbuckets[256];
 
 int main(int argc, char** argv) {
 
@@ -167,8 +168,8 @@ int main(int argc, char** argv) {
 	switch(mcHeader.numFiles){
 	case 1: { mcs->run( mcHeader, mcHeader.isoVal ); break; }
 	case 3: { mcs->run( mcHeader,  mcHeader.isoVal, &shadingObj, &cubeMarkObj );
-			  shadingObj.resize(1, 1, 1);
-			  cubeMarkObj.resize(1, 1, 1); break;
+			  /*shadingObj.resize(1, 1, 1);
+			  cubeMarkObj.resize(1, 1, 1);*/ break;
 			}
 	default: fprintf(stderr, "Error: invalid numFiles value."); break;
 	}
@@ -183,6 +184,9 @@ int main(int argc, char** argv) {
     printf("[MarchingCubes] Number of triangles and vertices are %i and %i", mcs->ntrigs(), mcs->nverts());
     printf("[MarchingCubes] Have a good day !\n");
 
+    for (int i=0; i<256; i++) {
+    	cout << "pcbuckets[" << setw(3) << i << "]=" << pcbuckets[i] << endl;
+    }
 	//-- start user interface
 	RenderManager::initialize(&argc, argv);
 	glutMainLoop();

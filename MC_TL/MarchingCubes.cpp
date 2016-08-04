@@ -893,6 +893,9 @@ void MarchingCubes::getSixNeighborVoxels(float nv[], Matrix3D<float>* dataPointO
 }
 //_____________________________________________________________________________
 // Build external triangles MSD:20130101
+
+int pcbuckets[256] = {0};
+
 void MarchingCubes::build_ext_triangles(MarchingCube_header& mcHeader, Matrix3D<float>* origVolObj){
 
 	Face f; 
@@ -957,11 +960,24 @@ void MarchingCubes::build_ext_triangles(MarchingCube_header& mcHeader, Matrix3D<
 
 		// extract
 
-		int cube_x = _vertices[v1_idx].x;
-		int cube_y = _vertices[v1_idx].y;
-		int cube_z = _vertices[v1_idx].z;
-		dummy_anim_code = int(cubeMarksObjHack->get(cube_x, cube_y, cube_z)) >> 2;
-		f.setAnimationCode(dummy_anim_code);
+		int cx1 = _vertices[v1_idx].x; int cy1 = _vertices[v1_idx].y; int cz1 = _vertices[v1_idx].z;
+		int cx2 = _vertices[v2_idx].x; int cy2 = _vertices[v2_idx].y; int cz2 = _vertices[v2_idx].z;
+		int cx3 = _vertices[v3_idx].x; int cy3 = _vertices[v3_idx].y; int cz3 = _vertices[v3_idx].z;
+		/*
+		if ((cx1 != cx2) || (cx1 != cx3))
+			cerr << "cube indexing does not work (x) " << cx1 << " " << cx2 << " " << cx3 << endl;
+		if ((cy1 != cy2) || (cy1 != cy3))
+			cerr << "cube indexing does not work (y) " << cy1 << " " << cy2 << " " << cy3 << endl;
+		if ((cz1 != cz2) || (cz1 != cz3))
+			cerr << "cube indexing does not work (z) " << cz1 << " " << cz2 << " " << cz3 << endl;
+		 */
+		int cx = min(min(cx1,cx2),cx3);
+		int cy = min(min(cy1,cy2),cy3);
+		int cz = min(min(cz1,cz2),cz3);
+		int c = int(cubeMarksObjHack->get(cx, cy, cz));
+		pcbuckets[c]++;
+		int pc = c >> 2;
+		f.setAnimationCode(pc);
 		global_facesVector.push_back(f);
 	}
 	printf("   %d n_extern_faces build \n", _ntrigs ) ;
