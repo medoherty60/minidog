@@ -36,6 +36,11 @@ public:
 	static bool enable_animation;
 	static int animation_face_code;
 
+	// marker object
+	static int marker_x, marker_y, marker_z;
+	static bool marker_enabled;
+	static int marker_incr;
+
 	static void resetAnimation() { animation_face_code = 0; }
 private:
 	// handles to GL windows
@@ -86,12 +91,14 @@ private:
 	// camera that controls the object window
 	static Camera* camera;
 	static void cameraButton(int id);
+	static void markerButton(int id);
 
 	static InputProcessor* input_processor;
 
 	// functions for rendering in the object window.
 	static void setProjection(int window, int x, int y, int w, int h);
 	static void displayFaces();
+	static void drawMarker();
 
 	static void renderBitmapString(float x, float y, float z, void *font, char *string);
 	static void renderString(float x, float y, char* string);

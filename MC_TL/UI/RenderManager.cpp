@@ -15,8 +15,14 @@ Camera* RenderManager::camera = NULL;
 InputProcessor* RenderManager::input_processor = NULL;
 
 #ifdef USE_GLUI
-static GLUI_EditText* mousex_text = NULL;
-static GLUI_EditText* mousey_text = NULL;
+static int mouse_x_display = 0;
+static int mouse_y_display = 0;
+static GLUI_EditText* mouse_x_text = NULL;
+static GLUI_EditText* mouse_y_text = NULL;
+static GLUI_EditText* marker_x_text = NULL;
+static GLUI_EditText* marker_y_text = NULL;
+static GLUI_EditText* marker_z_text = NULL;
+static GLUI_EditText* marker_incr_text = NULL;
 static GLUI_Button* camera_restore_buttons[10] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 GLUI *RenderManager::gluiCPW = NULL;
 GLUI *RenderManager::gluiTW = NULL;
@@ -38,6 +44,13 @@ float RenderManager::elapsed_frame_time = 0.0;
 bool RenderManager::first_animation_frame = true;
 bool RenderManager::enable_animation = true;
 int RenderManager::animation_face_code = 0;
+
+// marker object
+int RenderManager::marker_x = 0;
+int RenderManager::marker_y = 0;
+int RenderManager::marker_z = 0;
+bool RenderManager::marker_enabled = true;
+int RenderManager::marker_incr = 10;
 
 static void copyColor(float c1[4], float c2[4]){
 	memcpy(c1, c2, 4*sizeof(float));
@@ -613,6 +626,120 @@ void RenderManager::updateAnimation() {
 	}
 }
 
+void drawTriangle(vector<Point>& p, vector<Vector>& n, Color& c) {
+	float osx = HEADER.offsetX, osy = HEADER.offsetY, osz = HEADER.offsetZ;
+	glColor4f(c.red(), c.green(), c.blue(), 1.0);
+	glNormal3f(n[0].x(), n[0].y(), n[0].z());
+	glVertex3f(p[0].x()+osx, p[0].y()+osy, p[0].z()+osz);
+	glNormal3f(n[1].x(), n[1].y(), n[1].z());
+	glVertex3f(p[1].x()+osx, p[1].y()+osy, p[1].z()+osz);
+	glNormal3f(n[2].x(), n[2].y(), n[2].z());
+	glVertex3f(p[2].x()+osx, p[2].y()+osy, p[2].z()+osz);
+}
+
+void drawLine(Point& p1, Point& p2, Color& c) {
+	float osx = HEADER.offsetX, osy = HEADER.offsetY, osz = HEADER.offsetZ;
+	glColor4f(c.red(), c.green(), c.blue(), 1.0);
+	glVertex3f(p1.x()+osx, p1.y()+osy, p1.z()+osz);
+	glVertex3f(p2.x()+osx, p2.y()+osy, p2.z()+osz);
+}
+
+// draw the movable marker cube
+void RenderManager::drawMarker()
+{
+	Color c1(0,1,0,1), c2(1,0,1,1);
+	if (blackBG) c2 = Color(1,1,0,1);
+	int i = marker_x;
+	int j = marker_y;
+	int k = marker_z;
+	int d = 3;
+
+	int x1 = i, x2 = i+1, y1 = j, y2 = j+1, z1 = k, z2 = k+1;
+	Point p0(float(x1)*HEADER.dX,float(y1)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point p1(float(x2)*HEADER.dX,float(y1)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point p2(float(x1)*HEADER.dX,float(y2)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point p3(float(x2)*HEADER.dX,float(y2)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point p4(float(x1)*HEADER.dX,float(y1)*HEADER.dY,float(z2)*HEADER.dZ);
+	Point p5(float(x2)*HEADER.dX,float(y1)*HEADER.dY,float(z2)*HEADER.dZ);
+	Point p6(float(x1)*HEADER.dX,float(y2)*HEADER.dY,float(z2)*HEADER.dZ);
+	Point p7(float(x2)*HEADER.dX,float(y2)*HEADER.dY,float(z2)*HEADER.dZ);
+
+	x1 = i-d, x2 = i+d+1, y1 = j-d, y2 = j+d+1, z1 = k-d, z2 = k+d+1;
+	Point q0(float(x1)*HEADER.dX,float(y1)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point q1(float(x2)*HEADER.dX,float(y1)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point q2(float(x1)*HEADER.dX,float(y2)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point q3(float(x2)*HEADER.dX,float(y2)*HEADER.dY,float(z1)*HEADER.dZ);
+	Point q4(float(x1)*HEADER.dX,float(y1)*HEADER.dY,float(z2)*HEADER.dZ);
+	Point q5(float(x2)*HEADER.dX,float(y1)*HEADER.dY,float(z2)*HEADER.dZ);
+	Point q6(float(x1)*HEADER.dX,float(y2)*HEADER.dY,float(z2)*HEADER.dZ);
+	Point q7(float(x2)*HEADER.dX,float(y2)*HEADER.dY,float(z2)*HEADER.dZ);
+
+	Vector nfront( 0, 0,-1);
+	Vector nback( 0, 0, 1);
+	Vector nbottom( 0,-1, 0);
+	Vector ntop( 0, 1, 0);
+	Vector nleft(-1, 0, 0);
+	Vector nright( 1, 0, 0);
+
+	vector<Point> points;
+	points.resize(3);
+	vector<Vector> normals;
+	normals.resize(3);
+
+	glBegin(GL_TRIANGLES);
+	// front
+	normals[0] = normals[1] = normals[2] = nfront;
+	points[0] = p2;	points[1] = p3;	points[2] = p0;
+	drawTriangle(points, normals, c1);
+	points[0] = p1;	points[1] = p0;	points[2] = p3;
+	drawTriangle(points, normals, c1);
+	// back
+	normals[0] = normals[1] = normals[2] = nback;
+	points[0] = p4;	points[1] = p5;	points[2] = p6;
+	drawTriangle(points, normals, c1);
+	points[0] = p7;	points[1] = p6;	points[2] = p5;
+	drawTriangle(points, normals, c1);
+	// top
+	normals[0] = normals[1] = normals[2] = ntop;
+	points[0] = p6;	points[1] = p7;	points[2] = p2;
+	drawTriangle(points, normals, c1);
+	points[0] = p3;	points[1] = p2;	points[2] = p7;
+	drawTriangle(points, normals, c1);
+	// bottom
+	normals[0] = normals[1] = normals[2] = nbottom;
+	points[0] = p0;	points[1] = p1;	points[2] = p4;
+	drawTriangle(points, normals, c1);
+	points[0] = p5;	points[1] = p4;	points[2] = p1;
+	drawTriangle(points, normals, c1);
+	// left
+	normals[0] = normals[1] = normals[2] = nleft;
+	points[0] = p6;	points[1] = p2;	points[2] = p4;
+	drawTriangle(points, normals, c1);
+	points[0] = p0;	points[1] = p4;	points[2] = p2;
+	drawTriangle(points, normals, c1);
+	// right
+	normals[0] = normals[1] = normals[2] = nright;
+	points[0] = p3;	points[1] = p7;	points[2] = p1;
+	drawTriangle(points, normals, c1);
+	points[0] = p5;	points[1] = p1;	points[2] = p7;
+	drawTriangle(points, normals, c1);
+	glEnd();
+	glBegin(GL_LINES);
+	drawLine(q0,q1,c2);
+	drawLine(q1,q3,c2);
+	drawLine(q3,q2,c2);
+	drawLine(q2,q0,c2);
+	drawLine(q6,q7,c2);
+	drawLine(q7,q5,c2);
+	drawLine(q5,q4,c2);
+	drawLine(q4,q6,c2);
+	drawLine(q2,q6,c2);
+	drawLine(q3,q7,c2);
+	drawLine(q0,q4,c2);
+	drawLine(q1,q5,c2);
+	glEnd();
+}
+
 
 //Display func for Object Window
 void RenderManager::renderSceneOW() {
@@ -654,6 +781,10 @@ void RenderManager::renderSceneOW() {
 		displayLines();
 	}
 
+	if (marker_enabled) {
+		drawMarker();
+	}
+
 	// turn on the lights
 	glEnable(GL_LIGHTING);
 	//renderLightObjects();
@@ -676,8 +807,8 @@ void RenderManager::renderSceneCPW(){
 #endif
 
 #ifdef USE_GLUI
-	if (mousex_text != NULL) mousex_text->set_int_val(input_processor->getMouseX());
-	if (mousey_text != NULL) mousey_text->set_int_val(input_processor->getMouseY());
+	mouse_x_text->set_int_val(input_processor->getMouseX());
+	mouse_y_text->set_int_val(input_processor->getMouseY());
 
 	for (short i=0; i<10; i++)
 		if (camera->restoreStateAvailable(i)) camera_restore_buttons[i]->enable();
@@ -794,6 +925,43 @@ void RenderManager::cameraButton(int id) {
 	}
 }
 
+void RenderManager::markerButton(int id) {
+	switch (id) {
+	case 0:
+		marker_x += marker_incr;
+		marker_x_text->set_int_val(marker_x);
+		break;
+	case 1:
+		marker_x -= marker_incr;
+		marker_x_text->set_int_val(marker_x);
+		break;
+	case 2:
+		marker_y += marker_incr;
+		marker_y_text->set_int_val(marker_y);
+		break;
+	case 3:
+		marker_y -= marker_incr;
+		marker_y_text->set_int_val(marker_y);
+		break;
+	case 4:
+		marker_z += marker_incr;
+		marker_z_text->set_int_val(marker_z);
+		break;
+	case 5:
+		marker_z -= marker_incr;
+		marker_z_text->set_int_val(marker_z);
+		break;
+	case 10:
+		marker_incr += 1;
+		marker_incr_text->set_int_val(marker_incr);
+		break;
+	case 11:
+		marker_incr -= 1;
+		marker_incr_text->set_int_val(marker_incr);
+		break;
+	}
+}
+
 void RenderManager::initCPW(){
 	controlPanel_window = glutCreateSubWindow(main_window, 700, 0, 300, 750);
 	glutDisplayFunc(renderSceneCPW);
@@ -812,12 +980,12 @@ void RenderManager::initCPW(){
 	// not be local variables, since edits from UI would be placed here.
 	// In this case, it is okay, since the editors are disabled.
 	// (Probably there is a non-editable widget that should be used here.)
-	int mousex = input_processor->getMouseX();
-	int mousey = input_processor->getMouseY();
-	mousex_text = new GLUI_EditText(panel1, "mouse x:", &mousex);
-	mousey_text = new GLUI_EditText(panel1, "mouse y:", &mousey);
-	mousex_text->disable();
-	mousey_text->disable();
+	mouse_x_display = input_processor->getMouseX();
+	mouse_y_display = input_processor->getMouseY();
+	mouse_x_text = new GLUI_EditText(panel1, "mouse x:", &mouse_x_display);
+	mouse_y_text = new GLUI_EditText(panel1, "mouse y:", &mouse_y_display);
+	mouse_x_text->disable();
+	mouse_y_text->disable();
 
 	new GLUI_Checkbox( panel1, "Black background", &blackBG );
 	new GLUI_Checkbox( panel1, "Show bounding cube", &showCube );
@@ -837,9 +1005,24 @@ void RenderManager::initCPW(){
 		sprintf(s, "save %d",i);
 		new GLUI_Button(panel2, s, 200+i, (GLUI_Update_CB)cameraButton);
 	}
-
 	GLUI_Panel* panel3 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
-	new GLUI_Button(panel3, "quit", 0, (GLUI_Update_CB)exit);
+	new GLUI_StaticText( panel3, "Marker:" );
+	marker_x_text = new GLUI_EditText(panel3, "x", &marker_x);
+	marker_y_text = new GLUI_EditText(panel3, "y", &marker_y);
+	marker_z_text = new GLUI_EditText(panel3, "z", &marker_z);
+	marker_incr_text = new GLUI_EditText(panel3, "incr", &marker_incr);
+	new GLUI_Button(panel3, "+incr", 10, (GLUI_Update_CB)markerButton);
+	new GLUI_Button(panel3, "-incr", 11, (GLUI_Update_CB)markerButton);
+	new GLUI_Column(panel3);
+	new GLUI_Button(panel3, "+x", 0, (GLUI_Update_CB)markerButton);
+	new GLUI_Button(panel3, "-x", 1, (GLUI_Update_CB)markerButton);
+	new GLUI_Button(panel3, "+y", 2, (GLUI_Update_CB)markerButton);
+	new GLUI_Button(panel3, "-y", 3, (GLUI_Update_CB)markerButton);
+	new GLUI_Button(panel3, "+z", 4, (GLUI_Update_CB)markerButton);
+	new GLUI_Button(panel3, "-z", 5, (GLUI_Update_CB)markerButton);
+
+	GLUI_Panel* panel9 = new GLUI_Panel(gluiCPW, "", GLUI_PANEL_NONE);
+	new GLUI_Button(panel9, "quit", 0, (GLUI_Update_CB)exit);
 	glClearColor(0.8, 0.8, 0.8, 0.0);
 #else
 	glutKeyboardFunc(keyboardCPW);

@@ -11,7 +11,9 @@ using namespace std;
 
 class Face
 {
-private:
+//ANIMTEST
+//private:
+public:
 	Point p1, p2, p3;
 	Vector n1, n2, n3;
 	Cube* shadowCube;
@@ -21,7 +23,7 @@ private:
 	
 public:
 	
-	Face():face_color(.5f, 0.f, 0.f, 1.0f){ 
+	Face():face_color(.5f, 0.f, 0.f, 1.0f){
 		drawFaceFlag=0;
 		numberFaces=0;
 		faceID=0;

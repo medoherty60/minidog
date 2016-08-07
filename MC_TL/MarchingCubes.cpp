@@ -25,7 +25,9 @@
 #include "Face.h"
 #include "global.h"
 
-static int dummy_anim_code=1;
+// ANIMTEST
+static int dummy_anim_code = 1;
+static bool show_all_marked_cubes = true;
 
 // step size of the arrays of vertices and triangles
 #define ALLOC_SIZE 65536
@@ -70,14 +72,17 @@ MarchingCubes::~MarchingCubes()
 }
 //_____________________________________________________________________________
 
-
+// ANIMTEST: keep the cubeMarks volume available for rendering.
 Matrix3D<float>* cubeMarksObjHack = NULL;
 //_____________________________________________________________________________
 // main algorithm
 void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<float>* shadingObj, Matrix3D<float>* cubeMarksObj)
 //-----------------------------------------------------------------------------
 {
+	// ANIMTEST: keep the cubeMarks volume available for rendering.
 	cubeMarksObjHack = 	cubeMarksObj;
+	// ANIMTEST:note for testing mcHeader.densityFilter is false and mcHeader.markCube is true.
+
   clock_t time = clock() ;
 
   compute_intersection_points( iso ) ;
@@ -123,6 +128,10 @@ void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<floa
 	//----------------------------------			
 	if(validCube && edgeMarkCube){
 		
+		// ANIMTEST
+		if (show_all_marked_cubes)
+			_lut_entry = 0xFF;
+		else {
 		_lut_entry = 0 ;
 		for( int p = 0 ; p < 8 ; ++p )
 		{
@@ -130,6 +139,7 @@ void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<floa
 			if( fabs( _cube[p] ) < FLT_EPSILON ) _cube[p] = FLT_EPSILON ;
 			if( _cube[p] > 0 ) _lut_entry += 1 << p ;
 	  
+		}
 		}
 		/*
 		 if( ( _cube[0] = get_data( _i , _j , _k ) ) > 0 ) _lut_entry +=   1 ;
@@ -150,8 +160,13 @@ void MarchingCubes::run( MarchingCube_header& mcHeader, real iso , Matrix3D<floa
 	  printf("Num of Cubes in Density Range: %d \n", countCubes_inDensityRange);
   }
 		 
+  //ANIMTEST
+  if (show_all_marked_cubes) {
+	  // do nothing. faces were directly built from marked cubes.
+  } else {
   //-- New function to build triangle faces & gradients on original density (MSD: 20130101)
   build_ext_triangles(HEADER, shadingObj);
+  }
 
   cout<<"num of FACES="<<getNumFaces()<<endl;
   cout<<"% of FACES="<<((float)getNumFaces()/(float)(_size_x*_size_y*_size_z))*100.0<<endl;
@@ -492,14 +507,97 @@ bool MarchingCubes::test_interior( schar s )
 }
 //_____________________________________________________________________________
 
+//ANIMTEST
+// bypass MC and directly generate all faces of a cube
+void MarchingCubes::generateCubefaces(int i, int j, int k)
+{
+	Point p0(float(i  )*HEADER.dX,float(j  )*HEADER.dY,float(k  )*HEADER.dZ);
+	Point p1(float(i+1)*HEADER.dX,float(j  )*HEADER.dY,float(k  )*HEADER.dZ);
+	Point p2(float(i  )*HEADER.dX,float(j+1)*HEADER.dY,float(k  )*HEADER.dZ);
+	Point p3(float(i+1)*HEADER.dX,float(j+1)*HEADER.dY,float(k  )*HEADER.dZ);
+	Point p4(float(i  )*HEADER.dX,float(j  )*HEADER.dY,float(k+1)*HEADER.dZ);
+	Point p5(float(i+1)*HEADER.dX,float(j  )*HEADER.dY,float(k+1)*HEADER.dZ);
+	Point p6(float(i  )*HEADER.dX,float(j+1)*HEADER.dY,float(k+1)*HEADER.dZ);
+	Point p7(float(i+1)*HEADER.dX,float(j+1)*HEADER.dY,float(k+1)*HEADER.dZ);
+	Vector nfront( 0, 0,-1);
+	Vector nback( 0, 0, 1);
+	Vector nbottom( 0,-1, 0);
+	Vector ntop( 0, 1, 0);
+	Vector nleft(-1, 0, 0);
+	Vector nright( 1, 0, 0);
 
+	vector<Point> points;
+	points.resize(3);
+	vector<Vector> normals;
+	normals.resize(3);
+	Face f[12];
 
+	// front
+	normals[0] = normals[1] = normals[2] = nfront;
+	points[0] = p2;	points[1] = p3;	points[2] = p0;
+	f[0].addOneFace(points, normals);
+	points[0] = p1;	points[1] = p0;	points[2] = p3;
+	f[1].addOneFace(points, normals);
+	// back
+	normals[0] = normals[1] = normals[2] = nback;
+	points[0] = p4;	points[1] = p5;	points[2] = p6;
+	f[2].addOneFace(points, normals);
+	points[0] = p7;	points[1] = p6;	points[2] = p5;
+	f[3].addOneFace(points, normals);
+	// top
+	normals[0] = normals[1] = normals[2] = ntop;
+	points[0] = p6;	points[1] = p7;	points[2] = p2;
+	f[4].addOneFace(points, normals);
+	points[0] = p3;	points[1] = p2;	points[2] = p7;
+	f[5].addOneFace(points, normals);
+	// bottom
+	normals[0] = normals[1] = normals[2] = nbottom;
+	points[0] = p0;	points[1] = p1;	points[2] = p4;
+	f[6].addOneFace(points, normals);
+	points[0] = p5;	points[1] = p4;	points[2] = p1;
+	f[7].addOneFace(points, normals);
+	// left
+	normals[0] = normals[1] = normals[2] = nleft;
+	points[0] = p6;	points[1] = p2;	points[2] = p4;
+	f[8].addOneFace(points, normals);
+	points[0] = p0;	points[1] = p4;	points[2] = p2;
+	f[9].addOneFace(points, normals);
+	// right
+	normals[0] = normals[1] = normals[2] = nright;
+	points[0] = p3;	points[1] = p7;	points[2] = p1;
+	f[10].addOneFace(points, normals);
+	points[0] = p5;	points[1] = p1;	points[2] = p7;
+	f[11].addOneFace(points, normals);
+/*
+	f[0].face_color = Color(1,0,0,1);
+	f[1].face_color = Color(1,0,0,1);
+	f[2].face_color = Color(0,1,0,1);
+	f[3].face_color = Color(0,1,0,1);
+	f[4].face_color = Color(0,0,1,1);
+	f[5].face_color = Color(0,0,1,1);
+	f[6].face_color = Color(0,1,1,1);
+	f[7].face_color = Color(0,1,1,1);
+	f[8].face_color = Color(1,0,1,1);
+	f[9].face_color = Color(1,0,1,1);
+	f[10].face_color = Color(1,1,0,1);
+	f[11].face_color = Color(1,1,0,1);
+*/
+	for (int i=0; i<12; i++) {
+		f[i].face_color = Color(0.1,0.5,0.6,1);
+		global_facesVector.push_back(f[i]);
+	}
+}
 
 //_____________________________________________________________________________
 // Process a unit cube
 void MarchingCubes::process_cube( )
 //-----------------------------------------------------------------------------
 {
+	//ANIMTEST
+	if (show_all_marked_cubes) {
+		generateCubefaces(_i,_j,_k);
+		return;
+	}
   if( _originalMC )
   {
     char nt = 0 ;
@@ -894,6 +992,7 @@ void MarchingCubes::getSixNeighborVoxels(float nv[], Matrix3D<float>* dataPointO
 //_____________________________________________________________________________
 // Build external triangles MSD:20130101
 
+//ANIMTEST
 int pcbuckets[256] = {0};
 
 void MarchingCubes::build_ext_triangles(MarchingCube_header& mcHeader, Matrix3D<float>* origVolObj){

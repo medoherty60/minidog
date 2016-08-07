@@ -207,6 +207,8 @@ protected :
   /** tests if the components of the tesselation of the cube should be connected through the interior of the cube */
   bool test_interior( schar s )    ;
 
+  // ANIMTEST
+  void generateCubefaces(int _i, int _j, int _k);
 
 //-----------------------------------------------------------------------------
 // Operations
