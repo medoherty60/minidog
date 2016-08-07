@@ -10,7 +10,7 @@ using namespace std;
 #include "../global.h"
 
 int RenderManager::main_window=0, RenderManager::object_window=0;
-int RenderManager::controlPanel_window=0, RenderManager::text_window=0;
+int RenderManager::controlPanel_window=0;
 Camera* RenderManager::camera = NULL;
 InputProcessor* RenderManager::input_processor = NULL;
 
@@ -25,7 +25,6 @@ static GLUI_EditText* marker_z_text = NULL;
 static GLUI_EditText* marker_incr_text = NULL;
 static GLUI_Button* camera_restore_buttons[10] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 GLUI *RenderManager::gluiCPW = NULL;
-GLUI *RenderManager::gluiTW = NULL;
 #endif
 
 bool RenderManager::bothFaces = true;
@@ -581,8 +580,10 @@ void RenderManager::displayFaces(){
 void RenderManager::idle(void){
 	glutSetWindow(controlPanel_window);
 	glutPostRedisplay();
-	glutSetWindow(text_window);
-	glutPostRedisplay();
+	if (text_window != NULL) {
+		glutSetWindow(text_window->getGlutWindow());
+		glutPostRedisplay();
+	}
 	glutSetWindow(object_window);
 	glutPostRedisplay();
 }
@@ -852,24 +853,6 @@ void RenderManager::renderSceneCPW(){
 	glFlush();
 }
 
-//Display func for text Window
-void RenderManager::renderSceneTW(){
-	glutSetWindow(text_window);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#ifdef USE_MULTISAMPLING
-    glEnable(GL_MULTISAMPLE_ARB);
-#else
-    glDisable(GL_MULTISAMPLE_ARB);
-#endif
-	//char s0[1000];
-	//sprintf(s0,"Put text here ...");
-	//renderString(-0.5,0.0,s0);
-
-	glutSwapBuffers();
-	glFlush();
-}
-
 void RenderManager::initOW(){
 	object_window = glutCreateSubWindow(main_window, 0, 0, 700, 700);
 	if (camera != NULL) delete camera;
@@ -1034,29 +1017,6 @@ void RenderManager::initCPW(){
 
 }
 
-void RenderManager::initTW(){
-	text_window = glutCreateSubWindow(main_window, 0, 700, 700, 50);
-	glutDisplayFunc(renderSceneTW);
-	glEnable(GL_DEPTH_TEST);
-#ifdef USE_GLUI
-	// Enable this if controls are added to the text window
-	//gluiTW = GLUI_Master.create_glui_subwindow(text_window, GLUI_SUBWINDOW_TOP);
-	//GLUI_Master.set_glutKeyboardFunc(keyboardTW);
-	//GLUI_Master.set_glutMouseFunc(mouseTW);
-	//glutMotionFunc(motionTW);
-	//glutPassiveMotionFunc(passive_motionTW);
-	//new GLUI_Button(gluiTW, "Quit", 0, (GLUI_Update_CB)exit);
-	glClearColor(0.8, 0.8, 0.8, 0.0);
-#else
-	glutKeyboardFunc(keyboardTW);
-	glutMouseFunc(mouseTW);
-	glutMotionFunc(motionTW);
-	glutPassiveMotionFunc(passive_motionTW);
-	glClearColor(0.3, 0.6, 0.1, 0.0);
-#endif
-
-}
-
 void RenderManager::setProjection(int window, int x, int y, int w, int h)
 {
 	glutSetWindow(window);
@@ -1112,8 +1072,7 @@ void RenderManager::mouseOW(int button, int state, int x, int y) {
 }
 void RenderManager::mouseCPW(int button, int state, int x, int y) {
 }
-void RenderManager::mouseTW(int button, int state, int x, int y) {
-}
+
 
 // motion is called by GLUT when mouse is moved within the window with a button pressed
 void RenderManager::motionOW(int x, int y) {
@@ -1121,8 +1080,7 @@ void RenderManager::motionOW(int x, int y) {
 }
 void RenderManager::motionCPW(int x, int y) {
 }
-void RenderManager::motionTW(int x, int y) {
-}
+
 
 // passive_motion is called by GLUT when mouse is moved within the window with no button pressed
 void RenderManager::passive_motionOW(int x, int y) {
@@ -1130,8 +1088,7 @@ void RenderManager::passive_motionOW(int x, int y) {
 }
 void RenderManager::passive_motionCPW(int x, int y) {
 }
-void RenderManager::passive_motionTW(int x, int y) {
-}
+
 
 // keyboard is called by GLUT when an ASCII key is pressed
 void RenderManager::keyboardOW(unsigned char key, int x, int y) {
@@ -1139,8 +1096,7 @@ void RenderManager::keyboardOW(unsigned char key, int x, int y) {
 }
 void RenderManager::keyboardCPW(unsigned char key, int x, int y) {
 }
-void RenderManager::keyboardTW(unsigned char key, int x, int y) {
-}
+
 
 void RenderManager::initialize(int* pargc, char** argv) {
 
@@ -1167,7 +1123,8 @@ void RenderManager::initialize(int* pargc, char** argv) {
 	// set up the sub-windows
 	initOW();	// object window
 	initCPW();	// control panel window
-	initTW();	// text window
+	text_window = new TextWindow();
+	text_window->initTW(main_window, )
 }
 
 void RenderManager::renderBitmapString(float x, float y, float z, void *font, char *string)

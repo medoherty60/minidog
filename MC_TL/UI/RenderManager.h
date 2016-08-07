@@ -1,14 +1,14 @@
 #ifndef RENDERMANAGER_H
 #define RENDERMANAGER_H
 
-#define USE_GLUI
-//#define USE_MULTISAMPLING    // multisampling doesn't work yet
+#include "UIConfiguration.h"
 
 // This include should be moved to RenderManager.cpp,
 // which would require hiding the two GLUI window pointers.
 #ifdef USE_GLUI
 #include <GL/glui.h>
 #endif
+#include "TextWindow.h"
 
 class Camera;
 class InputProcessor;
@@ -44,16 +44,15 @@ public:
 	static void resetAnimation() { animation_face_code = 0; }
 private:
 	// handles to GL windows
-	static int main_window, object_window, controlPanel_window, text_window;
+	static int main_window, object_window, controlPanel_window;
 #ifdef USE_GLUI
 	static GLUI *gluiCPW;
-	static GLUI *gluiTW;
 #endif
+	TextWindow* text_window();
 
 	// initialize the sub-windows
 	static void initOW();
 	static void initCPW();
-	static void initTW();
 
 	// reshape is called by GLUT when nothing is happening
 	static void idle();
@@ -64,26 +63,21 @@ private:
 	// draw each of the sub-windows
 	static void renderSceneOW();
 	static void renderSceneCPW();
-	static void renderSceneTW();
 	static void updateAnimation();
 
 	// mouse is called by GLUT when a mouse button is pressed or released
 	static void mouseOW(int button, int state, int x, int y);
 	static void mouseCPW(int button, int state, int x, int y);
-	static void mouseTW(int button, int state, int x, int y);
 	// motion is called by GLUT when mouse is moved within the window with a button pressed
 	static void motionOW(int x, int y);
 	static void motionCPW(int x, int y);
-	static void motionTW(int x, int y);
 	// passive_motion is called by GLUT when mouse is moved within the window with no button pressed
 	static void passive_motionOW(int x, int y);
 	static void passive_motionCPW(int x, int y);
-	static void passive_motionTW(int x, int y);
 
 	// keyboard is called by GLUT when an ASCII key is pressed
 	static void keyboardOW(unsigned char key, int x, int y);
 	static void keyboardCPW(unsigned char key, int x, int y);
-	static void keyboardTW(unsigned char key, int x, int y);
 
 	// private constructor to prevent instances of this class.
 	RenderManager() { }
