@@ -46,21 +46,17 @@ void UIManager::initialize(int* pargc, char** argv) {
 
 	Camera* camera = new Camera(object_window->getGlutWindow());
 	InputProcessor* input_processor = new InputProcessor(camera);
-	Renderer* renderer = new Renderer();
 
 	object_window->attachCamera(camera);
 	object_window->attachInputProcessor(input_processor);
-	object_window->attachRenderer(renderer);
 
 	control_window = new ControlWindow(main_window, 700, 0, 300, 750);
 	control_window->attachCamera(camera);
 	control_window->attachInputProcessor(input_processor);
-	control_window->attachRenderer(renderer);
 
 	text_window = new TextWindow(main_window, 0, 700, 700, 50);
 	text_window->attachCamera(camera);
 	text_window->attachInputProcessor(input_processor);
-	text_window->attachRenderer(renderer);
 }
 
 // idle() is called by GLUT when nothing is happening

@@ -15,7 +15,6 @@
 
 class Camera;
 class InputProcessor;
-class Renderer;
 
 class TextWindow {
 public:
@@ -34,7 +33,6 @@ public:
 
 	void attachCamera(Camera* _camera) { camera = _camera; }
 	void attachInputProcessor(InputProcessor* _input_processor) { input_processor = _input_processor; }
-	void attachRenderer(Renderer* _renderer) { renderer = _renderer; }
 
 private:
 	int glut_window;
@@ -46,24 +44,19 @@ private:
 
 	Camera* camera;
 	InputProcessor* input_processor;
-	Renderer* renderer;
 
+	// static callback functions for GLUT
 	static TextWindow* callback_rcvr;
-	static void mouse_callback(int button, int state, int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->mouse(button,state,x,y);
-	}
-	static void motion_callback(int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->motion(x,y);
-	}
-	static void passive_motion_callback(int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->passive_motion(x,y);
-	}
-	static void keyboard_callback(unsigned char key, int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->keyboard(key,x,y);
-	}
-	static void display_callback() {
-		if (callback_rcvr != NULL) callback_rcvr->display();
-	}
+	static void mouse_callback(int button, int state, int x, int y)
+		{ callback_rcvr->mouse(button,state,x,y); }
+	static void motion_callback(int x, int y)
+		{ callback_rcvr->motion(x,y); }
+	static void passive_motion_callback(int x, int y)
+		{ callback_rcvr->passive_motion(x,y); }
+	static void keyboard_callback(unsigned char key, int x, int y)
+		{ callback_rcvr->keyboard(key,x,y);	}
+	static void display_callback()
+		{ callback_rcvr->display();	}
 };
 
 #endif /* UI_TEXTWINDOW_H_ */

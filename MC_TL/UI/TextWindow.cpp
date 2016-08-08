@@ -51,7 +51,7 @@ TextWindow::TextWindow(int parent_window, int x, int y, int width, int height) {
 
 void TextWindow::reshape(int x, int y, int w, int h) {
 	glutSetWindow(glut_window);
-	renderer->setProjection(x, y, w, h);
+	Renderer::setProjection(x, y, w, h);
 }
 
 void TextWindow::display(){

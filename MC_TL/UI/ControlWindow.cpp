@@ -89,7 +89,7 @@ ControlWindow::ControlWindow(int parent_window, int x, int y, int width, int hei
 
 void ControlWindow::reshape(int x, int y, int w, int h) {
 	glutSetWindow(glut_window);
-	renderer->setProjection(x, y, w, h);
+	Renderer::setProjection(x, y, w, h);
 }
 
 void ControlWindow::display(){

@@ -20,21 +20,13 @@ ObjectWindow::ObjectWindow(int parent_window, int x, int y, int width, int heigh
 
 	camera = NULL;
 	input_processor = NULL;
-	renderer = NULL;
 
 	if (callback_rcvr == NULL) callback_rcvr = this;
 
 	glut_window = glutCreateSubWindow(parent_window, x, y, width, height);
 
-	glutDisplayFunc(display_callback);
-
 	glEnable(GL_DEPTH_TEST);
 	//glPolygonMode(GL_FRONT, GL_FILL);
-	glutKeyboardFunc(keyboard_callback);
-	//glutSpecialFunc(specialKey);
-	glutMouseFunc(mouse_callback);
-	glutMotionFunc(motion_callback);
-	glutPassiveMotionFunc(passive_motion_callback);
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	glShadeModel (GL_SMOOTH);
 
@@ -55,6 +47,15 @@ ObjectWindow::ObjectWindow(int parent_window, int x, int y, int width, int heigh
 	first_animation_frame = true;
 	enable_animation = true;
 	animation_face_code = 0;
+	frame_count = 0;
+
+	// call backs from GLUT for this window
+	glutDisplayFunc(display_callback);
+	glutKeyboardFunc(keyboard_callback);
+	//glutSpecialFunc(specialKey);
+	glutMouseFunc(mouse_callback);
+	glutMotionFunc(motion_callback);
+	glutPassiveMotionFunc(passive_motion_callback);
 }
 
 void ObjectWindow::attachCamera(Camera* _camera) {
@@ -65,7 +66,7 @@ void ObjectWindow::attachCamera(Camera* _camera) {
 
 void ObjectWindow::reshape(int x, int y, int w, int h) {
 	glutSetWindow(glut_window);
-	renderer->setProjection(x, y, w, h);
+	Renderer::setProjection(x, y, w, h);
 	// tell the camera about the new dimensions of the object window
 	if (camera != NULL) camera->reshape(w, h);
 }
@@ -92,24 +93,24 @@ void ObjectWindow::display() {
 #endif
 
     if (ui_common.enable_animation) updateAnimation();
-    renderer->displayFaces(animation_face_code);
+    Renderer::displayFaces(animation_face_code);
 	glDisable(GL_LIGHTING);
 	//displayNormal();
 
 	if (ui_common.showCube) {
 		// draw a unit wireframe cube around the rendered volume
 		if (ui_common.blackBG)
-			renderer->renderWireFrame(1.,1.,1.,1.,1.);       //borderwidth,r,g,b,a
+			Renderer::renderWireFrame(1.,1.,1.,1.,1.);       //borderwidth,r,g,b,a
 		else
-			renderer->renderWireFrame(1.,0.,0.,0.,1.);
+			Renderer::renderWireFrame(1.,0.,0.,0.,1.);
 	}
 
 	if (ui_common.showAxes) {
-		renderer->displayLines(); // draw the coordinate axes
+		Renderer::displayLines(); // draw the coordinate axes
 	}
 
 	if (ui_common.marker_enabled) {
-		renderer->drawMarker();
+		Renderer::drawMarker();
 	}
 
 	// turn on the lights
@@ -160,8 +161,6 @@ void ObjectWindow::updateAnimation() {
 	camera->doRotationAngleAxis(angle,1.0,0.0,0.0);
 }
 */
-// selective face animation
-static int frame_count = 0;
 
 void ObjectWindow::updateAnimation() {
 	if (ui_common.reset_animation) {

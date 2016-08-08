@@ -15,7 +15,6 @@
 
 class Camera;
 class InputProcessor;
-class Renderer;
 
 class ControlWindow {
 public:
@@ -37,7 +36,6 @@ public:
 
 	void attachCamera(Camera* _camera) { camera = _camera; }
 	void attachInputProcessor(InputProcessor* _input_processor) { input_processor = _input_processor; }
-	void attachRenderer(Renderer* _renderer) { renderer = _renderer; }
 
 private:
 	int glut_window;
@@ -47,30 +45,19 @@ private:
 
 	Camera* camera;
 	InputProcessor* input_processor;
-	Renderer* renderer;
 
+	// static callback functions for GLUT
 	static ControlWindow* callback_rcvr;
-	static void mouse_callback(int button, int state, int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->mouse(button,state,x,y);
-	}
-	static void motion_callback(int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->motion(x,y);
-	}
-	static void passive_motion_callback(int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->passive_motion(x,y);
-	}
-	static void keyboard_callback(unsigned char key, int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->keyboard(key,x,y);
-	}
-	static void display_callback() {
-		if (callback_rcvr != NULL) callback_rcvr->display();
-	}
-	static void camera_button_callback(int id) {
-		if (callback_rcvr != NULL) callback_rcvr->camera_button(id);
-	}
-	static void marker_button_callback(int id) {
-		if (callback_rcvr != NULL) callback_rcvr->marker_button(id);
-	}
+	static void mouse_callback(int button, int state, int x, int y)
+		{ callback_rcvr->mouse(button,state,x,y); }
+	static void motion_callback(int x, int y)
+		{ callback_rcvr->motion(x,y); }
+	static void passive_motion_callback(int x, int y)
+		{ callback_rcvr->passive_motion(x,y); }
+	static void keyboard_callback(unsigned char key, int x, int y)
+		{ callback_rcvr->keyboard(key,x,y);	}
+	static void display_callback()
+		{ callback_rcvr->display();	}
 
 #ifdef USE_GLUI
 
@@ -83,6 +70,11 @@ private:
 	GLUI_EditText* marker_y_text;
 	GLUI_EditText* marker_z_text;
 	GLUI_EditText* marker_incr_text;
+	// static callback functions for GLUI
+	static void camera_button_callback(int id)
+		{ callback_rcvr->camera_button(id);	}
+	static void marker_button_callback(int id)
+		{ callback_rcvr->marker_button(id);	}
 #endif
 
 };

@@ -15,7 +15,6 @@
 
 class Camera;
 class InputProcessor;
-class Renderer;
 
 class ObjectWindow {
 
@@ -36,7 +35,7 @@ public:
 
 	void attachCamera(Camera* _camera);
 	void attachInputProcessor(InputProcessor* _input_processor) { input_processor = _input_processor; }
-	void attachRenderer(Renderer* _renderer) { renderer = _renderer; }
+
 private:
 
 	int glut_window;
@@ -46,7 +45,6 @@ private:
 
 	Camera* camera;
 	InputProcessor* input_processor;
-	Renderer* renderer;
 
 	// animation controls
 	clock_t last_frame_time;
@@ -54,26 +52,23 @@ private:
 	bool first_animation_frame;
 	bool enable_animation;
 	int animation_face_code;
-
+	// selective face animation
+	int frame_count = 0;
 	void resetAnimation() { animation_face_code = 0; }
 	void updateAnimation();
 
+	// static callback functions for GLUT
 	static ObjectWindow* callback_rcvr;
-	static void mouse_callback(int button, int state, int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->mouse(button,state,x,y);
-	}
-	static void motion_callback(int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->motion(x,y);
-	}
-	static void passive_motion_callback(int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->passive_motion(x,y);
-	}
-	static void keyboard_callback(unsigned char key, int x, int y) {
-		if (callback_rcvr != NULL) callback_rcvr->keyboard(key,x,y);
-	}
-	static void display_callback() {
-		if (callback_rcvr != NULL) callback_rcvr->display();
-	}
+	static void mouse_callback(int button, int state, int x, int y)
+		{ callback_rcvr->mouse(button,state,x,y); }
+	static void motion_callback(int x, int y)
+		{ callback_rcvr->motion(x,y); }
+	static void passive_motion_callback(int x, int y)
+		{ callback_rcvr->passive_motion(x,y); }
+	static void keyboard_callback(unsigned char key, int x, int y)
+		{ callback_rcvr->keyboard(key,x,y); }
+	static void display_callback()
+		{ callback_rcvr->display();	}
 };
 
 #endif /* UI_OBJECTWINDOW_H_ */
