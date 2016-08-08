@@ -1,25 +1,25 @@
 /*
- * RendererManager.cpp
+ * UIManager.cpp
  *
  *  Created on: Aug 7, 2016
  *      Author: mdoherty
  */
 #include <GL/glut.h>
-#include "RenderManager.h"
 #include "ObjectWindow.h"
 #include "ControlWindow.h"
 #include "TextWindow.h"
 #include "Camera.h"
 #include "InputProcessor.h"
 #include "Renderer.h"
+#include "UIManager.h"
 
-int RenderManager::main_window=0;
-ObjectWindow* RenderManager::object_window = NULL;
-ControlWindow* RenderManager::control_window = NULL;
-TextWindow* RenderManager::text_window = NULL;
+int UIManager::main_window=0;
+ObjectWindow* UIManager::object_window = NULL;
+ControlWindow* UIManager::control_window = NULL;
+TextWindow* UIManager::text_window = NULL;
 
 // initialize sets everything up so that we're ready to enter the glut loop.
-void RenderManager::initialize(int* pargc, char** argv) {
+void UIManager::initialize(int* pargc, char** argv) {
 
 	glutInit(pargc, argv);
 #ifdef USE_MULTISAMPLING
@@ -32,7 +32,7 @@ void RenderManager::initialize(int* pargc, char** argv) {
 	main_window = glutCreateWindow("Volume Visualization using - Marina Doherty ( TL:MC July, 2013)");
 
 	//Register callback routines for main window
-	//glutDisplayFunc(RenderManager::displayFaces);
+	//glutDisplayFunc(UIManager::displayFaces);
 #ifdef USE_GLUI
 	GLUI_Master.set_glutReshapeFunc(reshape);
 	GLUI_Master.set_glutIdleFunc(idle);
@@ -64,7 +64,7 @@ void RenderManager::initialize(int* pargc, char** argv) {
 }
 
 // idle() is called by GLUT when nothing is happening
-void RenderManager::idle(void){
+void UIManager::idle(void){
 	if (control_window != NULL) {
 		glutSetWindow(control_window->getGlutWindow());
 		glutPostRedisplay();
@@ -80,7 +80,7 @@ void RenderManager::idle(void){
 }
 
 // reshape is called by GLUT when window is reshaped
-void RenderManager::reshape(int w, int h){
+void UIManager::reshape(int w, int h){
 
 	// determine dimensions of each sub-window, relative to the full window
 

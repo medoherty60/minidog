@@ -6,10 +6,11 @@
  */
 #include "mc-io/_mc_ReadWriteImages.h"
 #include "MarchingCubes.h"
-#include "UI/RenderManager.h"
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+
+#include "UI/UIManager.h"
 using namespace std;
 
 void PetitUsage(char *exec)
@@ -188,7 +189,7 @@ int main(int argc, char** argv) {
     	cout << "pcbuckets[" << setw(3) << i << "]=" << pcbuckets[i] << endl;
     }
 	//-- start user interface
-	RenderManager::initialize(&argc, argv);
+	UIManager::initialize(&argc, argv);
 	glutMainLoop();
 
 }

@@ -6,9 +6,9 @@
  */
 #include "UICommon.h"
 #include <GL/glut.h>
-#include "RenderManager.h"
 #include "InputProcessor.h"
 #include "Camera.h"
+#include "UIManager.h"
 
 InputProcessor::InputProcessor(Camera* _camera) :
 	camera(_camera),
