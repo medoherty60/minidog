@@ -1,12 +1,12 @@
 /*
- * TextWindow.h
+ * ControlWindow.h
  *
- *  Created on: Aug 6, 2016
+ *  Created on: Aug 7, 2016
  *      Author: mdoherty
  */
 
-#ifndef UI_TEXTWINDOW_H_
-#define UI_TEXTWINDOW_H_
+#ifndef UI_CONTROLWINDOW_H_
+#define UI_CONTROLWINDOW_H_
 
 #include "UICommon.h"
 #ifdef USE_GLUI
@@ -17,15 +17,18 @@ class Camera;
 class InputProcessor;
 class Renderer;
 
-class TextWindow {
+class ControlWindow {
 public:
-	TextWindow(int parent_window, int x, int y, int width, int height);
+	ControlWindow(int parent_window, int x, int y, int width, int height);
 	void display();
 	void reshape(int x, int y, int w, int h);
 	void mouse(int button, int state, int x, int y);
 	void motion(int x, int y);
 	void passive_motion(int x, int y);
 	void keyboard(unsigned char key, int x, int y);
+
+	void camera_button(int id);
+	void marker_button(int id);
 
 	int getGlutWindow() { return glut_window; }
 #ifdef USE_GLUI
@@ -40,15 +43,13 @@ private:
 	int glut_window;
 #ifdef USE_GLUI
 	GLUI *glui_window;
-	GLUI_EditText* mouse_x_text;
-	GLUI_EditText* mouse_y_text;
 #endif
 
 	Camera* camera;
 	InputProcessor* input_processor;
 	Renderer* renderer;
 
-	static TextWindow* callback_rcvr;
+	static ControlWindow* callback_rcvr;
 	static void mouse_callback(int button, int state, int x, int y) {
 		if (callback_rcvr != NULL) callback_rcvr->mouse(button,state,x,y);
 	}
@@ -64,6 +65,27 @@ private:
 	static void display_callback() {
 		if (callback_rcvr != NULL) callback_rcvr->display();
 	}
+	static void camera_button_callback(int id) {
+		if (callback_rcvr != NULL) callback_rcvr->camera_button(id);
+	}
+	static void marker_button_callback(int id) {
+		if (callback_rcvr != NULL) callback_rcvr->marker_button(id);
+	}
+
+#ifdef USE_GLUI
+
+	// camera state control
+	GLUI_Button* camera_restore_buttons[10];
+
+	// marker control
+	int marker_incr;
+	GLUI_EditText* marker_x_text;
+	GLUI_EditText* marker_y_text;
+	GLUI_EditText* marker_z_text;
+	GLUI_EditText* marker_incr_text;
+#endif
+
 };
 
-#endif /* UI_TEXTWINDOW_H_ */
+
+#endif /* UI_CONTROLWINDOW_H_ */

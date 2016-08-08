@@ -27,7 +27,7 @@
 
 // ANIMTEST
 static int dummy_anim_code = 1;
-static bool show_all_marked_cubes = true;
+static bool show_all_marked_cubes = false;
 
 // step size of the arrays of vertices and triangles
 #define ALLOC_SIZE 65536

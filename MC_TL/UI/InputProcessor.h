@@ -7,6 +7,7 @@
  *      Author: Marina Doherty
  */
 #include <cstdlib>
+#include "UICommon.h"
 class Camera;
 
 class InputProcessor {
@@ -22,9 +23,6 @@ public:
 	// keyboard is called when an ASCII key is pressed
 	void keyboard(unsigned char key, int x, int y);
 
-	int getMouseX() { return mouse_x; }
-	int getMouseY() { return mouse_y; }
-
 private:
 	Camera* camera;
 
@@ -35,6 +33,8 @@ private:
 	// saved state for multi-character keyboard commands
 	bool save_requested;
 	bool restore_requested;
+
+	void shareMouseData() { ui_common.mouse_x = mouse_x; ui_common.mouse_y = mouse_y; }
 };
 
 #endif /* INPUTPROCESSOR_H */

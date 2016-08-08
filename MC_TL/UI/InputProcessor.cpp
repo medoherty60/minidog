@@ -4,6 +4,7 @@
  *  Created on: Jul 30, 2016
  *      Author: Marina Doherty
  */
+#include "UICommon.h"
 #include <GL/glut.h>
 #include "RenderManager.h"
 #include "InputProcessor.h"
@@ -14,6 +15,7 @@ InputProcessor::InputProcessor(Camera* _camera) :
 	mouse_x(0), mouse_y(0), prev_mouse_x(0), prev_mouse_y(0),
 	save_requested(false), restore_requested(false) {
 	for (short i=0; i<3; i++) button_state[i] = GLUT_UP;
+	shareMouseData();
 }
 
 // mouse is called when a mouse button is pressed or released
@@ -23,8 +25,8 @@ void InputProcessor::mouse(int button, int state, int x, int y) {
 		prev_mouse_x = x;
 		prev_mouse_y = y;
 	}
-	mouse_x = x;
-	mouse_y = y;
+	mouse_x = x; mouse_y = y;
+	shareMouseData();
 }
 
 // motion is called when mouse is with a button pressed
@@ -47,11 +49,13 @@ void InputProcessor::motion(int x, int y) {
 		if (camera != NULL)	camera->doTranslation(0, 0, tZ);
 	}
 	mouse_x = x; mouse_y = y;
+	shareMouseData();
 }
 
 // passive_motion is called when mouse is moved with no button pressed
 void InputProcessor::passive_motion(int x, int y) {
 	mouse_x = x; mouse_y = y;
+	shareMouseData();
 }
 
 // keyboard is called when an ASCII key is pressed
@@ -133,7 +137,7 @@ void InputProcessor::keyboard(unsigned char key, int x, int y)
 	}
 	else if ((key=='z')||(key=='Z'))
 	{
-		RenderManager::resetAnimation();
+		ui_common.reset_animation = true;
 	}
 }
 

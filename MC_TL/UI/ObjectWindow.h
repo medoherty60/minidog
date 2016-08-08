@@ -1,12 +1,12 @@
 /*
- * TextWindow.h
+ * ObjectWindow.h
  *
- *  Created on: Aug 6, 2016
+ *  Created on: Aug 7, 2016
  *      Author: mdoherty
  */
 
-#ifndef UI_TEXTWINDOW_H_
-#define UI_TEXTWINDOW_H_
+#ifndef UI_OBJECTWINDOW_H_
+#define UI_OBJECTWINDOW_H_
 
 #include "UICommon.h"
 #ifdef USE_GLUI
@@ -17,9 +17,11 @@ class Camera;
 class InputProcessor;
 class Renderer;
 
-class TextWindow {
+class ObjectWindow {
+
 public:
-	TextWindow(int parent_window, int x, int y, int width, int height);
+
+	ObjectWindow(int parent_window, int x, int y, int width, int height);
 	void display();
 	void reshape(int x, int y, int w, int h);
 	void mouse(int button, int state, int x, int y);
@@ -32,23 +34,31 @@ public:
 	GLUI *getGluiWindow() { return glui_window; }
 #endif
 
-	void attachCamera(Camera* _camera) { camera = _camera; }
+	void attachCamera(Camera* _camera);
 	void attachInputProcessor(InputProcessor* _input_processor) { input_processor = _input_processor; }
 	void attachRenderer(Renderer* _renderer) { renderer = _renderer; }
-
 private:
+
 	int glut_window;
 #ifdef USE_GLUI
 	GLUI *glui_window;
-	GLUI_EditText* mouse_x_text;
-	GLUI_EditText* mouse_y_text;
 #endif
 
 	Camera* camera;
 	InputProcessor* input_processor;
 	Renderer* renderer;
 
-	static TextWindow* callback_rcvr;
+	// animation controls
+	clock_t last_frame_time;
+	float elapsed_frame_time;
+	bool first_animation_frame;
+	bool enable_animation;
+	int animation_face_code;
+
+	void resetAnimation() { animation_face_code = 0; }
+	void updateAnimation();
+
+	static ObjectWindow* callback_rcvr;
 	static void mouse_callback(int button, int state, int x, int y) {
 		if (callback_rcvr != NULL) callback_rcvr->mouse(button,state,x,y);
 	}
@@ -66,4 +76,4 @@ private:
 	}
 };
 
-#endif /* UI_TEXTWINDOW_H_ */
+#endif /* UI_OBJECTWINDOW_H_ */
